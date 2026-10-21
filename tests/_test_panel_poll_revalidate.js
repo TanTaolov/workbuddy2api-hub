@@ -51,8 +51,12 @@ function callArgs(source, name) {
 const calls = callArgs(html, 'getJSON');
 
 // 1) 轮询的用量读接口：每处调用都必须带上 POLL_READ。
+// 下界 5：旧看板管线（loadAnalytics / loadAnalyticsMatrix）被 Bento 重写覆盖后
+// 已作为死代码删除，它们那两处 getJSON 从来不会执行；剩下的 5 处才是真正在跑的
+// 用量读取（/usage、/usage/perf、/usage/by-account、/usage/remaining、
+// /usage/timeseries），/usage/recent 单独走分页、不在此列。
 const polled = calls.filter(args => /\/usage/.test(args) && !/\/usage\/recent/.test(args));
-assert.ok(polled.length >= 6,
+assert.ok(polled.length >= 5,
   `只扫到 ${polled.length} 处用量轮询调用，提取逻辑坏了（页面本身没坏）`);
 for (const args of polled) {
   assert.ok(/\bPOLL_READ\b/.test(args),

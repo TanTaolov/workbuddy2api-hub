@@ -168,7 +168,7 @@ class HiddenPagesTests(unittest.TestCase):
             "user_custom_top": {"keep": 1},
             "limits": {"global": {"reserve_credits": 7}},
             "panel_password": {"salt": "ab", "digest": "cd", "rounds": 1},
-            "key_before_hidden": True,
+            "accounts_collapsed": True,
         })
         S.set_hidden_pages(self.dir, ["logs"])
         stored = self._read()
@@ -176,7 +176,7 @@ class HiddenPagesTests(unittest.TestCase):
         self.assertEqual(stored["limits"], {"global": {"reserve_credits": 7}})
         self.assertEqual(stored["panel_password"],
                          {"salt": "ab", "digest": "cd", "rounds": 1})
-        self.assertIs(stored["key_before_hidden"], True)
+        self.assertIs(stored["accounts_collapsed"], True)
         self.assertEqual(stored["hidden_pages"], ["logs"])
 
     def test_another_setting_write_keeps_the_list(self):
@@ -232,11 +232,11 @@ class HiddenPagesTests(unittest.TestCase):
                 self.assertEqual(S.hidden_pages(self.dir), [])
 
     def test_save_route_patch_leaves_other_settings_alone(self):
-        self._write({"user_custom_top": {"keep": 1}, "key_before_hidden": True})
+        self._write({"user_custom_top": {"keep": 1}, "accounts_collapsed": True})
         self.assertEqual(self._save({"hidden_pages": ["tasks"]}), [])
         stored = self._read()
         self.assertEqual(stored["user_custom_top"], {"keep": 1})
-        self.assertIs(stored["key_before_hidden"], True)
+        self.assertIs(stored["accounts_collapsed"], True)
 
     def test_save_route_ignores_a_payload_that_omits_the_list(self):
         S.set_hidden_pages(self.dir, ["tasks"])

@@ -10071,11 +10071,6 @@ def _usage_cache_maybe_save(kind, offset):
 
 def runtime_settings_view():
     """Current panel-visible settings (never returns the password or the key)."""
-    key = API_KEY or ""
-    if len(key) > 8:
-        masked = key[:4] + "*" * 6 + key[-4:]
-    else:
-        masked = "*" * len(key)
     keys = []
     for entry in configured_keys():
         raw = entry.get("key") or ""
@@ -10105,9 +10100,6 @@ def runtime_settings_view():
         })
     return {
         "panel_password_is_default": wb_settings.panel_password_is_default(ACCOUNTS_DIR),
-        "api_key_set": bool(key),
-        "api_key_set_by_panel": API_KEY_FILE_SET,
-        "api_key_masked": masked,
         "auth_required": auth_required(),
         "api_keys": keys,
         "deleted_api_keys": deleted_keys,
@@ -10168,7 +10160,6 @@ def runtime_settings_view():
         "log_db_max_bytes": wb_settings.log_db_max_bytes(ACCOUNTS_DIR),
         "accounts_collapsed": wb_settings.accounts_collapsed(ACCOUNTS_DIR),
         "accounts_separate_tab": wb_settings.accounts_separate_tab(ACCOUNTS_DIR),
-        "key_before_hidden": wb_settings.key_before_hidden(ACCOUNTS_DIR),
         "hidden_pages": wb_settings.hidden_pages(ACCOUNTS_DIR),
         "update_check_enabled": wb_settings.update_check_enabled(ACCOUNTS_DIR),
         "upstream": wb_settings.upstream_config(ACCOUNTS_DIR),
@@ -10181,7 +10172,7 @@ def runtime_settings_view():
         "accounts_dir": ACCOUNTS_DIR,
         "usage_dir": USAGE_DIR,
         "settings_file": wb_settings.settings_path(ACCOUNTS_DIR),
-        "version": "1.7.24",
+        "version": "1.7.25",
     }
 def current_account():
     """Account used for display purposes (health / usage summaries)."""
@@ -17516,7 +17507,7 @@ class Handler(BaseHTTPRequestHandler):
             super().finish()
         except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
             pass
-    server_version = "wb-proxy/1.7.24"
+    server_version = "wb-proxy/1.7.25"
     def log_message(self, fmt, *args):
         # 静默过滤前端看板高频定时心跳的正常 200 GET 请求（/logs、/usage、/accounts 轮询等）
         # 避免自增死循环刷屏与日志污染。遇 4xx/5xx 异常或所有非 GET 业务操作依然如实记录。
@@ -18180,9 +18171,6 @@ class Handler(BaseHTTPRequestHandler):
             "panel_password_is_default": wb_settings.panel_password_is_default(ACCOUNTS_DIR),
             "authenticated": self._panel_ok(),
         }
-        # Whether a key exists is not a secret; its value never leaves the
-        # process, and the settings endpoint only reports a masked form.
-        info["api_key_set"] = bool(API_KEY)
         return self._json(200, info)
 
     def _get_console_state(self):
@@ -19351,16 +19339,6 @@ class Handler(BaseHTTPRequestHandler):
                                    "invalid_request_error")
             wb_settings.set_accounts_separate_tab(ACCOUNTS_DIR, raw)
             reply["accounts_separate_tab"] = raw
-        if "key_before_hidden" in payload:
-            # Same shape as accounts_collapsed: one disclosure state per
-            # submission, and strictly a JSON boolean, because "false" as a
-            # string would be truthy and silently fold the row away.
-            raw = payload.get("key_before_hidden")
-            if not isinstance(raw, bool):
-                return self._error(400, "key_before_hidden must be true or false",
-                                   "invalid_request_error")
-            wb_settings.set_key_before_hidden(ACCOUNTS_DIR, raw)
-            reply["key_before_hidden"] = raw
         if "hidden_pages" in payload:
             # A list of page keys, and the only thing this branch may touch: the
             # submission carries just this key, so the settings it does not name
@@ -19446,17 +19424,6 @@ class Handler(BaseHTTPRequestHandler):
             wb_settings.set_quota_scan_models(ACCOUNTS_DIR, raw_models)
             reply["quota_scan_models_saved"] = len(
                 wb_settings.quota_scan_models(ACCOUNTS_DIR))
-        new_key = payload.get("api_key")
-        if new_key is not None:
-            new_key = str(new_key).strip()
-            if new_key and len(new_key) < 4:
-                return self._error(400, "api key must be at least 4 characters",
-                                   "invalid_request_error")
-            global API_KEY, API_KEY_FILE_SET
-            wb_settings.set_api_key(ACCOUNTS_DIR, new_key)
-            API_KEY = new_key
-            API_KEY_FILE_SET = True
-            reply["api_key_set"] = bool(new_key)
         if payload.get("restart_scheduler"):
             if SCHEDULER:
                 SCHEDULER.stop()

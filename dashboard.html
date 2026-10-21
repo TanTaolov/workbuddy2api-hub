@@ -131,6 +131,9 @@ body.win-capped .main-page section>:first-child{position:sticky;top:0;z-index:3;
   background:var(--panel);padding-top:18px;margin-bottom:0!important;padding-bottom:14px}
 /* 日志终端自带 860px 高度，限高同样要盖得住它（max-height 只在更小时生效）。 */
 body.win-capped #logTerminalBody{max-height:var(--win-max-h)}
+/* 签到与活跃记录是流水日志，读一行是一行；整窗过高会占满整屏，在全局限高
+   之外再压到 560px（全局限高更低时仍以全局值为准）。 */
+body.win-capped #sectionActivity{max-height:min(var(--win-max-h), 560px)}
 section h2{margin:0 0 14px;font-size:13px;font-weight:700;color:var(--dim);
   text-transform:uppercase;letter-spacing:.6px}
 section h2 em{color:var(--fg);font-style:normal;text-transform:none;letter-spacing:0;margin-left:6px}
@@ -642,9 +645,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
 #analyticsKpiCards .card .k{font-size:11px;white-space:nowrap;margin-bottom:3px;font-weight:600;color:var(--dim)}
 #analyticsKpiCards .card .s{font-size:10px;white-space:normal;line-height:1.35;margin-top:2px;color:var(--dim)}
 .model-pill{display:inline-flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;margin:2px 4px 2px 0;white-space:nowrap}
-/* 归属表表头里的行开关，直接复用设置页的 .switch 胶囊样式，只是表头比
-   设置页紧凑，把 40px 的最小高度收掉。 */
-.key-row-switch{min-height:0}
 .log-line{display:flex;align-items:flex-start;gap:8px;padding:3px 6px;border-radius:4px;font-family:Consolas,Monaco,'Courier New',monospace;font-size:12px;line-height:1.55;transition:background .1s}
 .log-line:hover{background:rgba(255,255,255,.05)}
 .log-ts{color:var(--terminal-dim);font-variant-numeric:tabular-nums;flex-shrink:0;user-select:none}
@@ -755,10 +755,12 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
   /* 账号工具栏：打卡按钮（每日活跃/Buddy 加油站）与「添加」同一行并靠右，
      不再单独占一整行。 */
   #accountsBody .toolbar .tb-checkin{margin-left:auto;flex-shrink:0}
-  /* Forms stack */
-  #pageSettings section > div[style*="display:flex"]{flex-wrap:wrap}
-  #pageSettings input:not([type=checkbox]), #pageSettings select{min-height:40px;font-size:13px}
-  #pageSettings .slot-input{font-size:13px}
+  /* Forms stack：API Key 已独立成 #pageKeys 页，与 #pageSettings 用同一组规则 */
+  #pageSettings section > div[style*="display:flex"],
+  #pageKeys section > div[style*="display:flex"]{flex-wrap:wrap}
+  #pageSettings input:not([type=checkbox]), #pageSettings select,
+  #pageKeys input:not([type=checkbox]), #pageKeys select{min-height:40px;font-size:13px}
+  #pageSettings .slot-input, #pageKeys .slot-input{font-size:13px}
   table.data-cards td[data-label="启用"]{justify-content:space-between}
   table.data-cards td[data-label="启用"] input[type=checkbox]{width:20px;height:20px}
   /* Logs */
@@ -1310,7 +1312,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
   };
 
   // 3. Tab 初始化（与下方主脚本的 MAIN_TABS 保持一致）
-  var TABS = ['gateway','accounts','tasks','analytics','agents','settings','logs'];
+  var TABS = ['gateway','accounts','tasks','analytics','agents','keys','settings','logs'];
   var pick = null;
   try {
     var q = new URLSearchParams(location.search).get('tab');
@@ -2219,7 +2221,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '网关日志已清空': 'Gateway logs cleared',
     '网关每隔这段时间去 OpenRouter 取一次价：每个模型每份不同的价格存成一条': 'The gateway fetches prices from OpenRouter every so often: each distinct price set of a model is stored as one',
     '网关设置': 'Gateway settings',
-    '面板密码与界面语言、API Key 与出口绑定、代理槽与限额、价格估算、出站身份与本地网络工具。': 'Panel password and UI language, API Keys and exit binding, proxy slots and quotas, price estimation, outbound identity and local web tools.',
+    '面板密码与界面语言、代理槽与限额、价格估算、出站身份与本地网络工具。': 'Panel password and UI language, proxy slots and quotas, price estimation, outbound identity and local web tools.',
     '估算价格': 'Estimated cost',
     '估算价格（国内版）': 'Estimated cost (China)',
     '估算价格（国际版）': 'Estimated cost (Global)',
@@ -2298,7 +2300,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '「全局 API Key」表示不在客户端配置里写入具体 Key，客户端沿用网关当前生效的全局 Key。': 'Global API Key means no concrete key is written into the client config; the client follows the gateway-level global key.',
     '检测到以下客户端安装在本机；点击「一键配置」即可让它改走本网关，原配置自动备份，可随时还原。': 'The following clients were detected on this machine; click One-click Setup to route it through this gateway. The original config is backed up automatically and can be restored anytime.',
     '任何支持 OpenAI 兼容或 Anthropic Messages 协议的客户端都可以手动接入本网关，把下面的地址填进客户端的 Base URL / API 地址即可；Key 到「设置」页复制。': 'Any client speaking OpenAI-compatible or Anthropic Messages protocol can join this gateway manually: paste the addresses below into the client Base URL / API URL field; copy the key from the Settings page.',
-    '鉴权 Key 请前往「设置 → API Key 与出口绑定」页复制，填入客户端的 API Key / Token 字段。': 'Copy the auth key from Settings → API Key & Exit Binding and fill it into the client API Key / Token field.',
+    '鉴权 Key 请前往「API Key」页复制，填入客户端的 API Key / Token 字段。': 'Copy the auth key from the API Key page and fill it into the client API Key / Token field.',
     '客户端检测完成': 'Client detection finished',
     '智能体列表加载失败:': 'Failed to load agent list:',
     '检测到外部修改：还原将覆盖外部改动': 'External changes detected: restoring will overwrite them',
@@ -2974,7 +2976,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "网关每隔这段时间去 OpenRouter 取一次价：每个模型每份不同的价格存成一条": "閘道每隔這段時間去 OpenRouter 取一次價：每個模型每份不同的價格存成一條",
     "管理账号池与代理出口，查看当日调用量、估算花费、成功率、最近请求与网关模型清单。": "管理帳號池與代理出口，查看當日呼叫量、估算花費、成功率、最近請求與閘道模型清單。",
     "网关设置": "閘道設定",
-    "面板密码与界面语言、API Key 与出口绑定、代理槽与限额、价格估算、出站身份与本地网络工具。": "面板密碼與介面語言、API Key 與出口繫結、代理槽與限額、價格估算、出站身份與本地網路工具。",
+    "面板密码与界面语言、代理槽与限额、价格估算、出站身份与本地网络工具。": "面板密碼與介面語言、代理槽與限額、價格估算、出站身份與本地網路工具。",
     "网关调用量": "閘道呼叫量",
     "网关运行日志": "閘道執行日誌",
     "网关默认上游已切换并永久保存为:": "閘道預設上游已切換並永久儲存為:",
@@ -3593,12 +3595,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     if(btn) btn.title = (lang === 'en')
       ? 'Switch language: English → 简体中文'
       : (lang === 'zh-Hant' ? '切換語言：正體中文（台灣） → English' : '切换语言：简体中文 → 正體中文（台灣）');
-    var zh = document.getElementById('langOptZh');
-    var hant = document.getElementById('langOptHant');
-    var en = document.getElementById('langOptEn');
-    if(zh && zh.classList && zh.classList.toggle) zh.classList.toggle('active', lang === 'zh');
-    if(hant && hant.classList && hant.classList.toggle) hant.classList.toggle('active', lang === 'zh-Hant');
-    if(en && en.classList && en.classList.toggle) en.classList.toggle('active', lang === 'en');
   }
   function setLang(next){
     lang = (next === 'en' || next === 'zh-Hant') ? next : 'zh';
@@ -3659,6 +3655,9 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
       </button>
       <button class="main-nav-btn" id="btnNavAgents" onclick="switchMainTab('agents')">
         智能体配置
+      </button>
+      <button class="main-nav-btn" id="btnNavKeys" onclick="switchMainTab('keys')">
+        API Key
       </button>
       <button class="main-nav-btn" id="btnNavSettings" onclick="switchMainTab('settings')">
         设置
@@ -3802,7 +3801,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         <span id="activeGatewayKeyCount" class="badge ok mini" style="font-weight:600">0 个 Key 生效</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin:2px 0 8px">
-        <span id="gatewayDot" class="dot" style="width:9px;height:9px"></span>
+        <span class="dot" style="width:9px;height:9px"></span>
         <span id="activeGatewayName" style="font-size:20px;font-weight:700;color:var(--accent);letter-spacing:-.4px">国际版 (Global)</span>
       </div>
       <div style="margin-top:auto">
@@ -3851,7 +3850,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
       </div>
     </div>
     <div id="recent" class="table-wrap"></div>
-    <div id="recentPagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);flex-wrap:wrap;gap:8px">
       <div id="recentPageInfo">第 1 / 1 页 · 共 0 条记录</div>
       <div style="display:inline-flex;gap:5px;align-items:center">
         <button class="sec mini" id="btnRecentPrev" onclick="changeRecentPage(-1)">上一页</button>
@@ -3876,7 +3875,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     <!-- 勾选语义（静态说明）：复选框只决定「一键配置」把哪些模型写进 DSH 等
          客户端，不改网关路由（未勾选的模型在网关侧照常可用）。选择是全局一份，
          不按版本视图分开；服务端没存过时按「全部勾选」画（= 升级前行为）。 -->
-    <div id="modelPickHint" style="font-size:12px;color:var(--dim);margin:0 0 10px;line-height:1.6"
+    <div style="font-size:12px;color:var(--dim);margin:0 0 10px;line-height:1.6"
          title="勾选结果存在网关设置里，对所有版本视图生效；未勾选只影响一键配置写入客户端的模型清单，网关本身照常提供这些模型。">只有勾选的模型才会写入 DSH 等客户端（一键配置）；默认全部勾选，可用表头「全选 / 全不选 / 反选」批量调整，改完请重新一键配置并重启客户端。</div>
     <!-- 清单来源横幅：API 获取 → 绿色状态条（附刷新时间）；非 API（项目默认
          信息/缓存文件）→ 黄色警示「模型、倍率数据可能不一致」。内容由
@@ -3899,32 +3898,33 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         <tbody></tbody>
       </table>
     </div>
-    <!-- 国内版视图下顺带列出国际版清单：切到国内版时不用再切回国际版去看另一套
-         模型。只有视图是「国内版」时才显示（国际版视图下面这张就是主表），
-         且只读——不带勾选框，勾选仍是全局一份，只在主表上操作。 -->
-    <div id="modelsIntlPanel" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
-      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--dim)">国际版模型清单<em id="modelsIntlCount" style="color:var(--dim);font-weight:500"></em></h3>
-        <span style="font-size:12px;color:var(--dim)">当前视图是国内版，这里同时列出国际版的在售模型，保存与勾选仍以国内版主表为准</span>
-      </div>
-      <div id="modelsIntlSourceLine" style="font-size:12px;color:var(--dim);margin:0 0 12px;min-height:16px"></div>
-      <div style="overflow-x:auto">
-        <table id="modelsTableIntl" class="data-cards">
-          <thead>
-            <tr>
-              <th style="text-align:left;width:19%">模型 ID</th>
-              <th style="text-align:left;width:11%">名称</th>
-              <th style="text-align:center;width:12%">消费倍率 / 优惠</th>
-              <th style="text-align:center;width:14%">模型能力</th>
-              <th style="text-align:center;width:9%">上下文窗口</th>
-              <th style="text-align:center;width:9%">最大输出</th>
-              <th style="text-align:left;width:15%">思考档位</th>
-              <th style="text-align:left;width:11%;white-space:nowrap">默认采样参数</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+  </section>
+
+  <!-- 国内版视图下顺带列出国际版清单：切到国内版时不用再切回国际版去看另一套
+       模型。只有视图是「国内版」时才显示（国际版视图下上面的主表就是它），
+       且只读——不带勾选框，勾选仍是全局一份，只在主表上操作。 -->
+  <section id="modelsIntlPanel" style="display:none">
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <h2 style="margin:0">国际版模型清单<em id="modelsIntlCount" style="color:var(--dim);font-weight:500"></em></h2>
+      <span style="font-size:12px;color:var(--dim)">当前视图是国内版，这里同时列出国际版的在售模型，保存与勾选仍以国内版主表为准</span>
+    </div>
+    <div id="modelsIntlSourceLine" style="font-size:12px;color:var(--dim);margin:0 0 12px;min-height:16px"></div>
+    <div style="overflow-x:auto">
+      <table id="modelsTableIntl" class="data-cards">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:19%">模型 ID</th>
+            <th style="text-align:left;width:11%">名称</th>
+            <th style="text-align:center;width:12%">消费倍率 / 优惠</th>
+            <th style="text-align:center;width:14%">模型能力</th>
+            <th style="text-align:center;width:9%">上下文窗口</th>
+            <th style="text-align:center;width:9%">最大输出</th>
+            <th style="text-align:left;width:15%">思考档位</th>
+            <th style="text-align:left;width:11%;white-space:nowrap">默认采样参数</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </section>
 
@@ -4011,8 +4011,9 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
 
   <!-- 签到与活跃记录：读 wb_activity.py 落下的结构化历史（GET /activity/history），
        一行一次真实尝试。筛选全部由服务端做（range/task/result/uid/limit），前端
-       只拼查询串与渲染，免得两处各写一份筛选规则再慢慢跑偏。 -->
-  <section>
+       只拼查询串与渲染，免得两处各写一份筛选规则再慢慢跑偏。id 供「面板窗口限高」
+       单独压低这块的固定上限（560px），见 body.win-capped #sectionActivity。 -->
+  <section id="sectionActivity">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <h2 style="margin:0">签到与活跃记录 <em id="activityCount"></em></h2>
       <div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -4055,7 +4056,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     <div style="font-size:12px;color:var(--dim);margin-top:4px">每日活跃打卡、Buddy 加油站、成长任务与福利积分总览。</div>
   </div>
   <!-- 国际版每日活跃福利 -->
-  <section id="sectionIntlTasks" style="margin-bottom:24px">
+  <section style="margin-bottom:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <h2 style="margin:0">国际版每日活跃福利</h2>
@@ -4361,7 +4362,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
             </table>
           </div>
         </div>
-        <div id="remainingSamplesBlock" style="margin-top:18px">
+        <div style="margin-top:18px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
             <div><b>撞线样本</b><span style="font-size:12px;color:var(--dim);margin-left:6px">逐个窗口的原始值（先按账号，再跨账号汇总）</span></div>
             <button class="sec mini" onclick="copyRemainingSamples()">复制为征集格式</button>
@@ -4425,7 +4426,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
   <div id="pageSettings" class="main-page">
     <div style="margin-bottom:16px">
       <h2 style="margin:0;font-size:17px;color:var(--fg);font-family:var(--serif);font-weight:600;letter-spacing:.02em">网关设置</h2>
-      <div style="font-size:12px;color:var(--dim);margin-top:4px">面板密码与界面语言、API Key 与出口绑定、代理槽与限额、价格估算、出站身份与本地网络工具。</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px">面板密码与界面语言、代理槽与限额、价格估算、出站身份与本地网络工具。</div>
     </div>
 
     <!-- 左侧导航由 initPageNav() 扫描本页的 section 自动生成，
@@ -4504,22 +4505,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
                style="width:110px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--fg);font:inherit">
         <button class="sec" onclick="saveWinMaxHeight(this)">保存</button>
       </div>
-    </section>
-
-    <section>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-        <div>
-          <h2 style="margin:0">API Key <em id="setKeyState"></em></h2>
-          <div style="font-size:12px;color:var(--dim);margin-top:4px">
-            为每个 Key 绑定专属出口。客户端使用该 Key 请求将固定走对应区域，实现双出口并发。
-          </div>
-        </div>
-        <button onclick="addApiKeyRow()">+ 添加 API Key</button>
-      </div>
-      <div id="keyList"></div>
-      <!-- 已删除的 Key 只留名字和日期：密钥已抹掉，所以这里没有「复制」。
-           历史用量按 id 记账，删掉这一行会让那些请求变成「未知 key」。 -->
-      <div id="deletedKeySection"></div>
     </section>
 
     <section>
@@ -4841,7 +4826,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
       <section>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <div>
-            <h2 style="margin:0">出站身份版本号 <em id="setIdentityVersionsState"></em></h2>
+            <h2 style="margin:0">出站身份版本号</h2>
             <div style="font-size:12px;color:var(--dim);margin-top:4px">
               三套身份当前发出去的版本号。默认值来自抓包与官方包解包核对，只有默认值有对应的头族与请求体配套。
             </div>
@@ -5247,7 +5232,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-            <button id="setUpdateCheckBtn" onclick="checkUpdateNow(this)">立即检查更新</button>
+            <button onclick="checkUpdateNow(this)">立即检查更新</button>
             <button id="setUpdateInstallBtn" class="sec" onclick="installUpdateNow(this)" disabled>安装更新</button>
           </div>
         </div>
@@ -5290,6 +5275,31 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
 
   </div>
 
+  <!-- API Key 独立页：Key 清单、出口绑定、删除记录从设置页拆出，设置页只留面板
+       自身的开关与默认值。数据与设置页同一份（loadSettings 统一拉取），两边的
+       keyList / deletedKeySection 各自渲染，互不影响。 -->
+  <div id="pageKeys" class="main-page">
+    <div style="margin-bottom:16px">
+      <h2 style="margin:0;font-size:17px;color:var(--fg);font-family:var(--serif);font-weight:600;letter-spacing:.02em">API Key</h2>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px">为每个 Key 绑定专属出口与可用模型；客户端使用该 Key 请求将固定走对应区域，实现双出口并发。</div>
+    </div>
+    <section>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="margin:0">API Key <em id="setKeyState"></em></h2>
+          <div style="font-size:12px;color:var(--dim);margin-top:4px">
+            为每个 Key 绑定专属出口。客户端使用该 Key 请求将固定走对应区域，实现双出口并发。
+          </div>
+        </div>
+        <button onclick="addApiKeyRow()">+ 添加 API Key</button>
+      </div>
+      <div id="keyList"></div>
+      <!-- 已删除的 Key 只留名字和日期：密钥已抹掉，所以这里没有「复制」。
+           历史用量按 id 记账，删掉这一行会让那些请求变成「未知 key」。 -->
+      <div id="deletedKeySection"></div>
+    </section>
+  </div>
+
   <div id="pageAgents" class="main-page">
     <div style="margin-bottom:16px">
       <h2 style="margin:0;font-size:17px;color:var(--fg);font-family:var(--serif);font-weight:600;letter-spacing:.02em">智能体配置</h2>
@@ -5300,7 +5310,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     <section>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
-          <h2 style="margin:0">连接信息 <em id="agentConnState"></em></h2>
+          <h2 style="margin:0">连接信息</h2>
           <div style="font-size:12px;color:var(--dim);margin-top:4px">写入各客户端配置时使用的网关地址、鉴权 Key 与默认模型。</div>
         </div>
         <button class="sec mini" onclick="loadAgents(true)" title="重新检测本机客户端">刷新</button>
@@ -5354,7 +5364,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
           </tr>
         </tbody>
       </table>
-      <div style="font-size:12px;color:var(--dim);margin-top:10px">鉴权 Key 请前往「设置 → API Key 与出口绑定」页复制，填入客户端的 API Key / Token 字段。</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:10px">鉴权 Key 请前往「API Key」页复制，填入客户端的 API Key / Token 字段。</div>
     </section>
   </div>
 
@@ -5769,7 +5779,6 @@ async function pollLogin(){
 
 window.ACTIVE_GATEWAY_REALM = "intl";
 window.VIEW_REALM = "intl";
-window.REALM_FILTER = "all";
 window.MODELS_DATA = [];
 window.ACCOUNTS = [];
 
@@ -6414,9 +6423,11 @@ function renderAvailableModels(){
 }
 
 /* 国内版视图下的国际版清单：只读、无勾选，因为它的用途是「不切视图也能看到
-   另一版有哪些模型」，不是第二份配置入口。国际版视图下这张表就是主表，这里
-   整个收起，免得同一份清单画两遍。数据每轮 loadModels() 随主表一起取，
-   失败就保留上一次的内容——主表能看，这份也没有跟着变空的道理。 */
+   另一版有哪些模型」，不是第二份配置入口。它自己是一块独立区块（section），
+   不与「网关模型清单」共用一个窗口；区块收进/展开时一并进/出页面侧栏导航。
+   国际版视图下主表画的就是它，这里整个收起，免得同一份清单画两遍。数据每轮
+   loadModels() 随主表一起取，失败就保留上一次的内容——主表能看，这份也没有
+   跟着变空的道理。 */
 let INTL_MODELS_DATA = [];
 let INTL_MODELS_CATALOG = null;
 let INTL_MODELS_LOADING = false;
@@ -6425,7 +6436,8 @@ function renderIntlModelsPanel(){
   const panel = document.getElementById('modelsIntlPanel');
   if(!panel) return;
   const show = window.VIEW_REALM === 'cn';
-  panel.style.display = show ? 'block' : 'none';
+  // inline：行内 h2 是侧栏导航取标题的入口，且会继承 section 的 block 排版。
+  panel.style.display = show ? 'inline' : 'none';
   if(!show) return;
   const count = document.getElementById('modelsIntlCount');
   if(count) count.textContent = INTL_MODELS_DATA.length ? '（共 ' + INTL_MODELS_DATA.length + ' 个）' : '';
@@ -6797,13 +6809,6 @@ async function toggleScheduler(btn){
   }finally{
     if(btn){ btn.disabled = false; }
   }
-}
-function filterRealm(m){
-  REALM_FILTER = m;
-  document.getElementById("fltAll").className = m === "all" ? "active" : "";
-  document.getElementById("fltIntl").className = m === "intl" ? "active" : "";
-  document.getElementById("fltCn").className = m === "cn" ? "active" : "";
-  renderAccounts();
 }
 async function doCheckin(btn){
   btn.disabled = true; const ot = btn.textContent; btn.textContent = "签到中...";
@@ -7256,7 +7261,6 @@ document.addEventListener('keydown', e => {
 function setCostCurrency(cur){
   costCurrency = (cur === 'USD') ? 'USD' : 'CNY';
   try { localStorage.setItem('wb-cost-currency', costCurrency); } catch(e) {}
-  renderCostToggle();
   // 已经渲染出来的表格/卡片就地换算重画，不必等下一轮轮询。
   if(typeof refreshAllCostViews === 'function') refreshAllCostViews();
 }
@@ -7431,20 +7435,6 @@ document.addEventListener('mouseout', e => {
   if(e.relatedTarget && cell.contains(e.relatedTarget)) return;
   hideCostTip();
 });
-function renderCostToggle(){
-  document.querySelectorAll('.cost-toggle').forEach(el => {
-    el.querySelectorAll('button').forEach(b => {
-      b.classList.toggle('active', b.dataset.cur === costCurrency);
-    });
-  });
-}
-// CNY/USD 二选一的切换按钮组；用于费用卡片与表格标题区。
-function costToggleHtml(){
-  return '<span class="cost-toggle" style="display:inline-flex;gap:4px">'
-    + '<button type="button" class="range-btn' + (costCurrency === 'CNY' ? ' active' : '') + '" data-cur="CNY" onclick="setCostCurrency(\'CNY\')">￥ 人民币</button>'
-    + '<button type="button" class="range-btn' + (costCurrency === 'USD' ? ' active' : '') + '" data-cur="USD" onclick="setCostCurrency(\'USD\')">$ 美元</button>'
-    + '</span>';
-}
 // 输入 / 输出 / 思考 三个数字，各自一色，斜杠分隔。思考为 0 也写出来，
 // 列的形状因此固定，不会因某个模型不推理就缩短。
 const tripleTokens = (inp, out, think) =>
@@ -7453,18 +7443,6 @@ const tripleTokens = (inp, out, think) =>
   '<span style="color:var(--accent2)">' + fmt(out || 0) + '</span>' +
   ' <span style="color:var(--dim-light)">/</span> ' +
   '<span style="color:var(--think)">' + fmt(think || 0) + '</span>';
-
-function perfRow(label, b, unit, fmtFn, color){
-  if(!b) return '<tr><td>' + label + '</td><td colspan="5" style="color:var(--dim)">暂无数据</td></tr>';
-  const f = fmtFn || (v => v);
-  const dot = color ? ' <i style="display:inline-block;width:7px;height:7px;border-radius:2px;background:' + color + ';margin-left:6px"></i>' : '';
-  return '<tr><td>' + label + dot + '</td>'
-    + '<td><b>' + f(b.avg) + '</b>' + unit + '</td>'
-    + '<td>' + f(b.p50) + unit + '</td>'
-    + '<td>' + f(b.p90) + unit + '</td>'
-    + '<td>' + f(b.p99) + unit + '</td>'
-    + '<td style="color:var(--dim)">' + b.samples + ' 次</td></tr>';
-}
 
 function card(k, v, sub, cls){
   return '<div class="card ' + (cls||'') + '"><div class="k">' + k + '</div>'
@@ -8737,7 +8715,6 @@ async function setAccountProduct(uid, prod, btn){
     if(btn){ btn.disabled = false; }
   }
 }
-async function switchProduct(uid, btn){ return setAccountProduct(uid, 'workbuddy', btn); }
 // 一键切换所有出站身份：后端 /accounts/product 不带 uid / realm 就是全量
 // （含另一个版本），所以这里只负责挑下一个身分、并把当前身分显示在按钮上。
 const PRODUCT_ORDER = ['workbuddy', 'vscode', 'cli'];
@@ -9907,7 +9884,6 @@ async function refreshInner(gen){
   const metaEl = document.getElementById('meta');
   if(metaEl) metaEl.innerHTML = '';
   document.getElementById('logfile').textContent = t.log_file || '';
-  const rEl = document.getElementById('realm'); if(rEl) rEl.textContent = t.realm ? ' · ' + t.realm : '';
 
   // 分别统计国际版与国内版账号与积分
   const accts = window.ACCOUNTS || [];
@@ -10118,15 +10094,15 @@ function generatePageList(current, total){
 
 // Tab ids in nav order. One list so the restore path and the nav cannot
 // drift apart.
-const MAIN_TABS = ['gateway', 'accounts', 'tasks', 'analytics', 'agents', 'settings', 'logs'];
+const MAIN_TABS = ['gateway', 'accounts', 'tasks', 'analytics', 'agents', 'keys', 'settings', 'logs'];
 const MAIN_TAB_STORE = 'wb-proxy-main-tab';
 let currentMainTab = 'gateway';
-let analyticsRange = 'today';
-let cachedMatrixData = null;
-let matrixAcctFilter = '';
-let matrixModelFilter = '';
-// Model allowlist for the combined matrix; filled by loadAnalyticsMatrix().
-let MATRIX_MODELS = new Set();
+
+/* 数据看板的取数入口：实现在文件末尾的 Bento IIFE 里（wbaTick），由它挂到
+   window 上。这里先占位，保证切页/切视图/轮询这些裸调用在任何加载顺序下都有
+   函数可调；IIFE 跑起来后会覆盖成真正的实现。 */
+function loadAnalytics(){}
+function loadAnalyticsMatrix(){}
 
 
 /* ---- panel password gate ---- */
@@ -10614,6 +10590,12 @@ function accountsSectionBody(){
   return document.getElementById('accountsBody');
 }
 
+/* 折叠状态的只读出口：内部一律直接用 _accountsCollapsed，但测试要通过
+   new Function 把它抓出来观测，删掉会让 _test_accounts_collapse.js 失败。 */
+function accountsCollapsed(){
+  return _accountsCollapsed;
+}
+
 // 唯一的写入口：aria-expanded、正文的 collapsed 类与内存状态一起改，
 // 三者不可能不同步。
 function applyAccountsCollapsed(collapsed){
@@ -10622,10 +10604,6 @@ function applyAccountsCollapsed(collapsed){
   const btn = document.getElementById('accountsToggle');
   if(body) body.classList.toggle('collapsed', _accountsCollapsed);
   if(btn) btn.setAttribute('aria-expanded', _accountsCollapsed ? 'false' : 'true');
-  return _accountsCollapsed;
-}
-
-function accountsCollapsed(){
   return _accountsCollapsed;
 }
 
@@ -10693,6 +10671,8 @@ function navPageLabel(row){
   return String(source || '').replace(/\s+/g, ' ').trim() || row.key;
 }
 
+/* 收起清单的只读出口：内部一律直接用 _hiddenPages，测试通过 new Function
+   把它抓出来观测（_test_page_visibility.js）。 */
 function hiddenPages(){
   return _hiddenPages.slice();
 }
@@ -10828,6 +10808,12 @@ async function togglePageVisibility(key){
 let _accountsSeparateTab = false;
 let _accountsSections = null;
 
+/* 页签模式的只读出口：内部一律直接用 _accountsSeparateTab，测试通过
+   new Function 把它抓出来观测（_test_accounts_page.js）。 */
+function accountsSeparateTab(){
+  return _accountsSeparateTab;
+}
+
 function accountsPageSections(){
   // 区块可能已经被 initPageNav() 包进 .page-nav-body（页面内容整体包一层，
   // grid 里才只剩「侧栏 + 内容」两项），所以页面 div 与那层包裹都要找一遍。
@@ -10845,10 +10831,6 @@ function accountsPageSections(){
   }));
   if(found.length) _accountsSections = found;
   return found;
-}
-
-function accountsSeparateTab(){
-  return _accountsSeparateTab;
 }
 
 // 插到锚点前面——插在锚点**所在的那个容器**里，而不是插到页面 div 上：
@@ -10992,8 +10974,6 @@ async function loadSettings(showToast){
 
     // 账号区折叠：服务端没存过、存坏了，或后端根本没这个字段，都按展开算。
     applyAccountsCollapsed(data.accounts_collapsed === true);
-    // 「(切换前)」行开关同理：只有明确存过 true 才收起，其余都照常显示。
-    applyKeyBeforeHidden(data.key_before_hidden === true);
     // 顶部页签显示：字段缺失或存坏了都按「全部显示」算，见 normaliseHiddenPages。
     applyHiddenPages(data.hidden_pages);
     // 账号页签模式：同样只有明确存过 true 才拆开，其余（没存过、存坏了、
@@ -12826,29 +12806,8 @@ const REALM_CHOICES = [
 /* Model allow-list per key. Patterns are matched case-insensitively with `*`
    wildcards ("deepseek*", "gpt-6-astra"). An empty list means no limit, which
    is how every key saved before this field existed comes back. */
-function parseModelPatterns(text){
-  const out = [];
-  String(text || '').split(/[,;]/).forEach(part => {
-    const pattern = part.trim().toLowerCase();
-    if(pattern && out.indexOf(pattern) === -1) out.push(pattern);
-  });
-  return out;
-}
 function modelPatternsText(patterns){
   return Array.isArray(patterns) ? patterns.join(', ') : '';
-}
-
-/* 允许账号按精确 uid 匹配（不做通配），所以这里只做去空白与去重。 */
-function parseAccountRefs(text){
-  const out = [];
-  String(text || '').split(/[,;\n]/).forEach(part => {
-    const ref = part.trim();
-    if(ref && out.indexOf(ref) === -1) out.push(ref);
-  });
-  return out;
-}
-function accountRefsText(refs){
-  return Array.isArray(refs) ? refs.join(', ') : '';
 }
 
 /* 已删除的 Key 是只读历史：密钥已被抹掉，所以这里不提供复制，也不提供恢复。 */
@@ -13740,6 +13699,7 @@ function switchMainTab(tab){
   const btnLogs = document.getElementById('btnNavLogs');
   const btnSettings = document.getElementById('btnNavSettings');
   const btnAgents = document.getElementById('btnNavAgents');
+  const btnKeys = document.getElementById('btnNavKeys');
   const pageGateway = document.getElementById('pageGateway');
   const pageTasks = document.getElementById('pageTasks');
   const pageAccounts = document.getElementById('pageAccounts');
@@ -13747,6 +13707,7 @@ function switchMainTab(tab){
   const pageLogs = document.getElementById('pageLogs');
   const pageSettings = document.getElementById('pageSettings');
   const pageAgents = document.getElementById('pageAgents');
+  const pageKeys = document.getElementById('pageKeys');
   const tabs = [
     ['gateway', btnGateway, pageGateway],
     ['accounts', btnAccounts, pageAccounts],
@@ -13754,7 +13715,8 @@ function switchMainTab(tab){
     ['analytics', btnAnalytics, pageAnalytics],
     ['logs', btnLogs, pageLogs],
     ['settings', btnSettings, pageSettings],
-    ['agents', btnAgents, pageAgents]
+    ['agents', btnAgents, pageAgents],
+    ['keys', btnKeys, pageKeys]
   ];
   tabs.forEach(([name, btn, page]) => {
     if(!btn || !page) return;
@@ -13768,6 +13730,10 @@ function switchMainTab(tab){
   if(tab === 'accounts' || (!_accountsSeparateTab && tab === 'gateway')){ loadActivityBoard(); }
   if(tab === 'analytics'){ loadAnalytics(); loadAnalyticsMatrix(); }
   if(tab === 'settings'){ loadSettings(); loadProxySlots(); }
+  // API Key 页的数据由 loadSettings() 统一拉取（settings.json 里存着 api_keys 与
+  // deleted_api_keys）；独立的 keys 页与设置页共用同一份内存状态（API_KEY_ROWS），
+  // 两边渲染互不干扰。主动切到 keys 页时也重拉一次，保证看到的是最新清单。
+  if(tab === 'keys'){ loadSettings(); }
   if(tab === 'agents'){ loadAgents(); }
   if(tab === 'logs'){
     startLogPolling();
@@ -14434,446 +14400,10 @@ async function clearServerLogs(){
   }
 }
 
-/* 时间范围：每个窗口都是服务端的一段切片，切换即重新取数。
- *
- * 只有「今日 / 全部历史」时，一次 /usage/analytics 同时带回两个桶，切换按钮
- * 重渲染缓存就够了；窗口变多之后一个 payload 装不下所有窗口，继续重渲染缓存
- * 只会把上一个窗口的数字挂到新标签下面，所以一律重取。 */
-function setAnalyticsRange(range){
-  analyticsRange = range;
-  const btns = {today:'btnRangeToday', week:'btnRangeWeek', month:'btnRangeMonth',
-                all:'btnRangeAll', custom:'btnRangeCustom'};
-  Object.keys(btns).forEach(k => {
-    const b = document.getElementById(btns[k]);
-    if(b) b.classList.toggle('active', k === range);
-  });
-  const box = document.getElementById('rangeCustomBox');
-  if(box) box.style.display = (range === 'custom') ? 'inline-flex' : 'none';
-  if(range === 'custom') prefillCustomRange();
-  loadAnalytics();
-  // The model matrix reads /usage and /usage/perf directly, so it has to be
-  // refetched: without this the table kept showing all-time figures while the
-  // page said "today", which is the inconsistency the range buttons were
-  // meant to remove.
-  loadAnalyticsMatrix();
-}
+// ---------------------------------------------------------------------------
+// 剩余用量估算（/usage/remaining）
 
-/* 自定义区间的输入框初始为空，而空 = 不限，画面会和「全部历史」一模一样，看起来
- * 像按钮坏了。第一次点开时把起点填成今天零点：一个能看懂的默认窗口，操作者再自己
- * 放宽或收窄；终点留空表示「到现在」。 */
-function prefillCustomRange(){
-  const el = document.getElementById('rangeCustomSince');
-  if(!el || el.value) return;
-  const d = new Date();
-  el.value = toLocalInputValue(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / 1000);
-}
 
-function pad2(n){ return String(n).padStart(2, '0'); }
-
-/* datetime-local 与 epoch 互转：输入框里是操作者按日历读到的本地墙上时间，所以
- * 转换用浏览器自己的时区；服务端拿 epoch 与它自己的时钟比较。 */
-function toLocalInputValue(epochSec){
-  if(!epochSec) return '';
-  const d = new Date(epochSec * 1000);
-  if(isNaN(d.getTime())) return '';
-  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate())
-    + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-}
-
-function fromLocalInputValue(value){
-  if(!value) return null;
-  const t = new Date(value).getTime();
-  return isNaN(t) ? null : Math.floor(t / 1000);
-}
-
-function onRangeCustomChange(){
-  loadAnalytics();
-  loadAnalyticsMatrix();
-}
-
-/* 三个取数端点共用同一个查询串，避免 /usage 与 /usage/perf 各拼一份而漏掉自定义
- * 区间——那正是「卡片与表格口径不一致」的复发路径。 */
-function analyticsQuery(){
-  let q = '?realm=all&range=' + encodeURIComponent(analyticsRange || 'today');
-  if(analyticsRange === 'custom'){
-    const sEl = document.getElementById('rangeCustomSince');
-    const uEl = document.getElementById('rangeCustomUntil');
-    const s = fromLocalInputValue(sEl ? sEl.value : '');
-    const u = fromLocalInputValue(uEl ? uEl.value : '');
-    if(s !== null) q += '&since=' + s;
-    if(u !== null) q += '&until=' + u;
-  }
-  return q;
-}
-
-/* 模型性能指标与用量一览
- *
- * Reads the combined view on purpose. The table carries its own 区域
- * column, so scoping it to the gateway's current exit would hide exactly the
- * models this page exists to compare. */
-// /v1/models?realm=all 的目录在这里只作展示白名单（哪些模型算"已知模型"），
-// 内容变化极慢，却跟着 5 秒轮询每轮重取一份（实测统计页开着约 12~15 次/分钟、
-// 约 24KB/次）。改成一个 TTL：进统计页时取一次，之后最多每 10 分钟回源一次；
-// 取失败不刷新时间戳，下一轮继续重试（和原来"失败也不清空白名单"一致）。
-let matrixModelsAt = 0;
-const MATRIX_MODELS_TTL_MS = 10 * 60 * 1000;
-async function loadAnalyticsMatrix(){
-  try{
-      const q = analyticsQuery();
-    const needModels = !MATRIX_MODELS.size || (Date.now() - matrixModelsAt) >= MATRIX_MODELS_TTL_MS;
-    const [usage, perf, models] = await Promise.all([
-      getJSON('/usage' + q, POLL_READ),
-      getJSON('/usage/perf' + q, POLL_READ),
-      // The catalog is only a display filter, so a failure here must not
-      // blank the table; null keeps the previous allowlist.
-      needModels ? getJSON('/v1/models?realm=all').catch(() => null) : Promise.resolve(null),
-    ]);
-    if(models && models.data){
-      MATRIX_MODELS = new Set(models.data.map(m => m.id));
-      matrixModelsAt = Date.now();
-    }
-    cachedMatrixData = { usage: usage, perf: perf };
-    fillMatrixFilters(usage);
-    renderPerfMatrix(usage, perf);
-  }catch(err){
-    if(!isAuthError(err)) console.error('loadAnalyticsMatrix failed:', err);
-  }
-}
-
-/* Rebuild the two matrix filter dropdowns from the payload just fetched.
- *
- * Options are derived from the data rather than from the account pool, so the
- * list only offers accounts and models that actually have rows - a filter that
- * can only ever yield an empty table is worse than no filter. A previously
- * chosen value is kept when it is still present, and cleared when it is not,
- * which is what happens when the range flips and an account drops out.
- */
-function fillMatrixFilters(usage){
-  const acctSel = document.getElementById('matrixAcctFilter');
-  const modelSel = document.getElementById('matrixModelFilter');
-  const names = (usage && usage.accounts_map) || {};
-  const modelCount = {};
-  Object.keys((usage && usage.by_model) || {}).forEach(id => {
-    if(!id.endsWith('-model')) modelCount[id] = (usage.by_model[id] || {}).requests || 0;
-  });
-  if(acctSel){
-    const seen = new Set();
-    Object.values((usage && usage.by_model_acct) || {}).forEach(byRealm => {
-      Object.values(byRealm || {}).forEach(byAcct => {
-        Object.keys(byAcct || {}).forEach(uid => {
-          if(uid && uid !== '(unattributed)') seen.add(uid);
-        });
-      });
-    });
-    const opts = Array.from(seen).sort((a, b) => {
-      const na = (names[a] || {}).nickname || a;
-      const nb = (names[b] || {}).nickname || b;
-      return na.localeCompare(nb);
-    });
-    if(matrixAcctFilter && !seen.has(matrixAcctFilter)) matrixAcctFilter = '';
-    acctSel.innerHTML = '<option value="">全部账号</option>' + opts.map(uid => {
-      const info = names[uid] || {};
-      const label = (info.nickname || uid.slice(0, 8)) + ' (' + uid.slice(0, 6) + ')';
-      return '<option value="' + esc(uid) + '"' + (uid === matrixAcctFilter ? ' selected' : '') + '>' + esc(label) + '</option>';
-    }).join('');
-  }
-  if(modelSel){
-    const ids = Object.keys(modelCount).filter(id => modelCount[id] > 0).sort();
-    if(matrixModelFilter && ids.indexOf(matrixModelFilter) === -1) matrixModelFilter = '';
-    modelSel.innerHTML = '<option value="">全部模型</option>' + ids.map(id =>
-      '<option value="' + esc(id) + '"' + (id === matrixModelFilter ? ' selected' : '') + '>' + esc(id) + '</option>'
-    ).join('');
-  }
-}
-
-function renderPerfMatrix(usage, perf){
-  const matrixEl = document.getElementById("perfMatrix");
-  if(!matrixEl) return;
-  const bmPerf = (perf && perf.by_model) || {};
-  const validModels = MATRIX_MODELS;
-  const modelMap = {};
-  Object.entries(usage.by_model || {}).forEach(([id, m]) => {
-    if((!validModels.size || validModels.has(id)) && m.requests > 0 && !id.endsWith('-model')){
-      modelMap[id] = Object.assign({id: id}, m);
-    }
-  });
-  Object.entries(bmPerf).forEach(([id, p]) => {
-    if((!validModels.size || validModels.has(id)) && p.requests > 0 && !id.endsWith('-model') && !modelMap[id]){
-      modelMap[id] = {
-        id: id,
-        requests: p.requests || 0,
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        reasoning_tokens: 0,
-        cached_tokens: 0,
-        total_tokens: 0
-      };
-    }
-  });
-  // One row per (model, exit). A model served by both exits gets two rows,
-  // each carrying its own tokens, latency and speed; the region column then
-  // describes exactly the numbers next to it instead of collapsing both.
-  const realmMap = (usage && usage.by_model_realm) || {};
-  const acctMap = (usage && usage.by_model_acct) || {};
-  const perfAcctMap = (perf && perf.by_model_acct) || {};
-  const rowsData = [];
-  Object.values(modelMap)
-    .sort((a,b) => (b.total_tokens || b.requests) - (a.total_tokens || a.requests))
-    .forEach(m => {
-      if(matrixModelFilter && m.id !== matrixModelFilter) return;
-      const per = realmMap[m.id];
-      const realms = per ? Object.keys(per).filter(r => (per[r].requests || 0) > 0) : [];
-      if(realms.length > 1){
-        // Most-used exit first, so the ordering stays meaningful.
-        realms.sort((x, y) => (per[y].total_tokens || 0) - (per[x].total_tokens || 0));
-      }
-      // Within an exit, one row per account: two accounts sharing an exit are
-      // two different consumers, and merging them hid which one spent what.
-      const parts = [];
-      (realms.length ? realms : ['']).forEach(r => {
-        const accts = ((acctMap[m.id] || {})[r]) || {};
-        const perfAccts = ((perfAcctMap[m.id] || {})[r]) || {};
-        // Union of both maps: a bucket holding only failures exists in perf
-        // alone, and dropping it would hide failures the total counts.
-        const keys = Array.from(new Set(
-          Object.keys(accts).concat(Object.keys(perfAccts))
-        )).filter(a => {
-          const u = accts[a] || {};
-          const p = perfAccts[a] || {};
-          return (u.requests || 0) > 0 || (u.errors || 0) > 0 ||
-                 (p.requests || 0) > 0 || (p.errors || 0) > 0 ||
-                 (p.client_aborted || 0) > 0;
-        });
-        // The account filter narrows the rows themselves, not just their
-        // visibility, so the summary below always matches what is shown.
-        const shown = matrixAcctFilter ? keys.filter(a => a === matrixAcctFilter) : keys;
-        if(shown.length){
-          shown.sort((x, y) =>
-            ((accts[y] || {}).total_tokens || 0) - ((accts[x] || {}).total_tokens || 0));
-          shown.forEach(a => {
-            // Tokens come from usage; a failure-only bucket has none.
-            const u = accts[a] || {requests: 0, prompt_tokens: 0, completion_tokens: 0,
-                                   reasoning_tokens: 0, cached_tokens: 0, total_tokens: 0};
-            parts.push({ stat: u, realm: r, acct: a,
-                         accts: { [a]: u.requests || 0 } });
-          });
-        } else if(!matrixAcctFilter){
-          // No per-account data for this exit (an older log, say): fall back
-          // to the exit totals rather than dropping the row.
-          const fallback = per ? per[r] : m;
-          parts.push({ stat: fallback, realm: r, acct: '',
-                       accts: fallback.accounts || {} });
-        }
-      });
-      parts.forEach((p, i) => {
-        rowsData.push(Object.assign({}, p.stat, {
-          id: m.id, realm: p.realm, acct: p.acct, accts: p.accts,
-          split: parts.length > 1, first: i === 0,
-        }));
-      });
-    });
-
-  const countEm = document.getElementById("matrixModelCount");
-  if(countEm){
-    const nModels = new Set(rowsData.map(r => r.id)).size;
-    const anyFilter = !!(matrixAcctFilter || matrixModelFilter);
-    countEm.textContent = nModels ? ("(有调用的模型: " + nModels +
-      " 个·共 " + rowsData.length + " 行明细" + (anyFilter ? " · 已筛选" : "") + ")") : "";
-  }
-
-  if(!rowsData.length){
-    matrixEl.innerHTML = '<div class="empty">当前版本暂无模型请求或性能数据</div>';
-  } else {
-    /* Summary row (Total / All Models).
-     *
-     * With no filter this is the endpoint-wide figure, as before. With a
-     * filter active it is recomputed from the visible rows instead, because a
-     * total that ignores the filter contradicts the rows directly beneath it -
-     * the exact confusion the filter is meant to remove. Latency, speed and
-     * wall time are averages over the filtered rows' own sample counts, so a
-     * barely-used row cannot outvote a heavily-used one.
-     */
-    const filtering = !!(matrixAcctFilter || matrixModelFilter);
-    let sumReq, sumErr, sumTok, sumP, sumC, sumR, totTtft, totTps, totWall, totCache, sumCost;
-    if(!filtering){
-      sumReq = usage.requests; sumErr = perf.errors; sumTok = usage.total_tokens;
-      sumP = usage.prompt_tokens; sumC = usage.completion_tokens; sumR = usage.reasoning_tokens;
-      // OpenRouter 价估算的合计：未筛选时取出口级汇总（与上面的数字同源）。
-      sumCost = usage.cost_cny || 0;
-      totTtft = perf.ttft_ms ? (ms(perf.ttft_ms.avg) + " (P50 " + ms(perf.ttft_ms.p50) + ")") : "-";
-      totTps = perf.tokens_per_sec ? (perf.tokens_per_sec.avg.toFixed(1) + " tok/s") : "-";
-      totWall = perf.wall_ms ? ms(perf.wall_ms.avg) : "-";
-      totCache = perf.cache_hit_pct ? (perf.cache_hit_pct.avg.toFixed(1) + "%") : "-";
-    } else {
-      sumReq = 0; sumErr = 0; sumTok = 0; sumP = 0; sumC = 0; sumR = 0; sumCost = 0;
-      let ttftW = 0, ttftN = 0, tpsW = 0, tpsN = 0, wallW = 0, wallN = 0, cacheW = 0, cacheN = 0;
-      rowsData.forEach(m => {
-        sumReq += m.requests || 0;
-        sumTok += m.total_tokens || 0;
-        sumP += m.prompt_tokens || 0;
-        sumC += m.completion_tokens || 0;
-        sumR += m.reasoning_tokens || 0;
-        sumCost += m.cost_cny || 0;
-        const mp = ((perf && perf.by_model_realm) || {})[m.id] || {};
-        const mpAcctAll = ((perf && perf.by_model_acct) || {})[m.id] || {};
-        const mpRealm = m.realm ? (mp[m.realm] || null) : null;
-        const mpAcct = (m.realm && m.acct && mpAcctAll[m.realm])
-          ? (mpAcctAll[m.realm][m.acct] || null) : null;
-        const e = mpAcct || mpRealm || bmPerf[m.id] || {};
-        sumErr += e.errors || 0;
-        if(e.ttft_ms && e.ttft_ms.samples){ ttftW += e.ttft_ms.avg * e.ttft_ms.samples; ttftN += e.ttft_ms.samples; }
-        if(e.tokens_per_sec && e.tokens_per_sec.samples){ tpsW += e.tokens_per_sec.avg * e.tokens_per_sec.samples; tpsN += e.tokens_per_sec.samples; }
-        if(e.wall_ms && e.wall_ms.samples){ wallW += e.wall_ms.avg * e.wall_ms.samples; wallN += e.wall_ms.samples; }
-        if(e.cache_hit_pct && e.cache_hit_pct.samples){ cacheW += e.cache_hit_pct.avg * e.cache_hit_pct.samples; cacheN += e.cache_hit_pct.samples; }
-      });
-      totTtft = ttftN ? ms(ttftW / ttftN) : "-";
-      totTps = tpsN ? (((tpsW / tpsN)).toFixed(1) + " tok/s") : "-";
-      totWall = wallN ? ms(wallW / wallN) : "-";
-      totCache = cacheN ? ((cacheW / cacheN).toFixed(1) + "%") : "-";
-    }
-    const summaryRow = '<tr style="background:rgba(37,99,235,.06);font-weight:600">'
-      + '<td style="text-align:left" data-label="模型"><b>' + (filtering ? '筛选结果合计 (Filtered)' : '全部模型合计 (Total)') + '</b></td>'
-      + '<td style="text-align:center" data-label="区域"><span style="color:var(--dim)">—</span></td>'
-      + '<td style="text-align:left" data-label="账号"><span style="color:var(--dim)">' + (filtering ? '已筛选' : '全部账号') + '</span></td>'
-      + '<td data-label="请求数">' + fmt(sumReq) + '</td>'
-      + '<td data-label="失败">' + (sumErr
-          ? ('<span style="color:var(--bad)">' + fmt(sumErr) + '</span>')
-          : '<span style="color:var(--dim)">0</span>') + '</td>'
-      + '<td data-label="总 Token"><b style="color:var(--accent)">' + fmt(sumTok) + '</b></td>'
-      + '<td class="triple" data-label="输入 / 输出 / 思考">' + tripleTokens(sumP, sumC, sumR) + '</td>'
-      + '<td data-label="首字延迟">' + totTtft + '</td>'
-      + '<td data-label="生成速度"><b style="color:var(--accent2)">' + totTps + '</b></td>'
-      + '<td data-label="端到端耗时">' + totWall + '</td>'
-      + '<td data-label="缓存命中">' + totCache + '</td>'
-      + '<td data-label="用量占比">100%</td>'
-      + '<td data-label="OpenRouter 价估算" class="pricing-col" style="color:var(--warn)">' + (PRICING_ON ? fmtCost(sumCost) : '—') + '</td>'
-      + '</tr>';
-
-    const rows = rowsData.map(m => {
-      // Latency/speed come from the matching (model, exit) bucket when the
-      // backend supplied one; otherwise fall back to the model-wide figure.
-      const mp = ((perf && perf.by_model_realm) || {})[m.id] || {};
-      const mpAcctAll = ((perf && perf.by_model_acct) || {})[m.id] || {};
-      const mpRealm = m.realm ? (mp[m.realm] || null) : null;
-      // Most specific first: this account on this exit, then the exit, then
-      // the model. A split row must not borrow another account's latency.
-      const mpAcct = (m.realm && m.acct && mpAcctAll[m.realm])
-        ? (mpAcctAll[m.realm][m.acct] || null) : null;
-      const mpEff = mpAcct || mpRealm || bmPerf[m.id] || {};
-      const m_ttft = mpEff.ttft_ms ? (ms(mpEff.ttft_ms.avg) + " <span style='color:var(--dim);font-size:11px'>(P50 " + ms(mpEff.ttft_ms.p50) + ")</span>") : "-";
-      const m_tps = mpEff.tokens_per_sec ? ('<b style="color:var(--accent2)">' + mpEff.tokens_per_sec.avg.toFixed(1) + '</b> <span style="font-size:11px;color:var(--dim)">tok/s</span>') : "-";
-      const m_wall = mpEff.wall_ms ? ms(mpEff.wall_ms.avg) : "-";
-      const m_cache = (m.prompt_tokens > 0) ? pct(m.cached_tokens / m.prompt_tokens * 100) : (mpEff.cache_hit_pct ? mpEff.cache_hit_pct.avg.toFixed(1) + "%" : "-");
-      /* Share of the table's own total - the figure in the summary row -
-       * rather than of the largest row. Dividing by the maximum made the
-       * biggest model read 100% and every other row a fraction of it, which
-       * is a relative ranking, not the share the column name promises.
-       * One decimal, like every other percentage on the page: a whole-percent
-       * reading collapses a model that spent millions of tokens to "0%". */
-      const pctTok = sumTok > 0 ? Math.round(m.total_tokens / sumTok * 1000) / 10 : 0;
-      // 0 is a real result (the model ran and never failed), so it stays
-      // visible as a muted zero rather than the dash used for no data.
-      const errCell = mpEff.errors
-        ? ('<span style="color:var(--bad)">' + fmt(mpEff.errors) + '</span>')
-        : '<span style="color:var(--dim)">0</span>';
-      const acctsMap = usage.accounts_map || {};
-      // This row's own accounts, not every account that touched the model.
-      const mAccts = m.accts || m.accounts || {};
-      const acctEntries = Object.entries(mAccts);
-      let realmCell = '<span style="color:var(--dim)">—</span>';
-      let acctCell = '<span style="color:var(--dim)">—</span>';
-      const realms = new Set();
-      if(m.realm){
-        realms.add(m.realm);
-      } else {
-        acctEntries.forEach(([uid]) => {
-          const info = acctsMap[uid] || {};
-          if(info.realm) realms.add(info.realm);
-        });
-      }
-      if(realms.size === 1){
-        const r = Array.from(realms)[0];
-        realmCell = r === 'cn' ? '<span class="realm-badge-cn">国内版</span>' : '<span class="realm-badge-intl">国际版</span>';
-      } else if(realms.size > 1){
-        realmCell = '<span class="realm-badge-intl">国际版</span> <span class="realm-badge-cn">国内版</span>';
-      } else {
-        // No account attribution on these rows (a test call,
-        // say). Decide from the model id itself: this table
-        // spans both realms, so the gateway's current exit
-        // would mislabel domestic-only models.
-        const isIntlOnly = ['gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna', 'gpt-5.5', 'gpt-5.4', 'gpt-5.3-codex', 'gemini-3.5-flash', 'grok-4.7'].includes(m.id);
-        const isCnOnly = ['deepseek-v4-pro', 'glm-5.1', 'glm-5v-turbo', 'kimi-k3-1', 'kimi-k2.7', 'minimax-m3'].includes(m.id);
-        realmCell = isIntlOnly ? '<span class="realm-badge-intl">国际版</span>'
-          : (isCnOnly ? '<span class="realm-badge-cn">国内版</span>'
-            : '<span style="color:var(--dim)">—</span>');
-      }
-      if(acctEntries.length === 1 && acctEntries[0][0] === '(unattributed)'){
-        acctCell = '<span style="color:var(--dim)">—</span>';
-      } else if(acctEntries.length === 1){
-        const [uid, count] = acctEntries[0];
-        const info = acctsMap[uid] || {};
-        const name = esc(info.nickname || uid.slice(0, 8));
-        acctCell = '<b>' + name + '</b>';
-      } else if(acctEntries.length > 1){
-        acctCell = acctEntries.map(([uid, count]) => {
-          const info = acctsMap[uid] || {};
-          const name = esc(info.nickname || uid.slice(0, 6));
-          return '<span class="badge mini" style="margin:1px 2px">' + name + ' <span style="color:var(--dim)">(' + count + ')</span></span>';
-        }).join('');
-      }
-      return '<tr>'
-        + '<td style="text-align:left" class="mono" data-label="模型"><b>' + esc(m.id) + '</b></td>'
-        + '<td style="text-align:center;white-space:nowrap" data-label="区域">' + realmCell + '</td>'
-        + '<td style="text-align:left" data-label="账号">' + acctCell + '</td>'
-        + '<td data-label="请求数">' + fmt(m.requests) + '</td>'
-        + '<td data-label="失败">' + errCell + '</td>'
-        + '<td data-label="总 Token"><b>' + fmt(m.total_tokens) + '</b></td>'
-        + '<td class="triple" data-label="输入 / 输出 / 思考">' + tripleTokens(m.prompt_tokens, m.completion_tokens, m.reasoning_tokens) + '</td>'
-        + '<td data-label="首字延迟">' + m_ttft + '</td>'
-        + '<td data-label="生成速度">' + m_tps + '</td>'
-        + '<td data-label="端到端耗时">' + m_wall + '</td>'
-        + '<td data-label="缓存命中">' + m_cache + '</td>'
-        + '<td style="min-width:90px" data-label="用量占比"><span class="bar-fill" style="width:' + Math.max(3, pctTok).toFixed(1) + '%"></span> <span style="font-size:11px;color:var(--dim)">' + pctTok.toFixed(1) + '%</span></td>'
-        + '<td data-label="OpenRouter 价估算" class="pricing-col" style="color:var(--warn)" title="OpenRouter 价估算：按该行（模型·区域·账号）的 token 消耗折算；按条件定价的模型（输入长度阈值或时段）按每条请求取档；单条请求实际用的策略、三档单价与匹配来源见「最近请求」里那条的悬停提示">'
-        +   ((m.cost_cny || 0) > 0 ? fmtCost(m.cost_cny) : '<span style="color:var(--dim)">—</span>')
-        + '</td>'
-        + '</tr>';
-    }).join('');
-
-    // 延迟 / 速度列取自日志末尾的采样，窗口比采样更宽时它们只覆盖最新的那一段。
-    // 明说覆盖范围，比让局部数字冒充整个窗口要好。
-    let coverageNote = '';
-    if(perf && perf.sample_capped && perf.sample_from){
-      coverageNote = '<div style="font-size:12px;color:var(--dim);margin-bottom:8px">'
-        + '延迟 / 速度列只覆盖日志末尾的部分请求（自 '
-        + esc(new Date(perf.sample_from * 1000).toLocaleString())
-        + ' 起），更早的请求未纳入这三列。</div>';
-    }
-    matrixEl.innerHTML = coverageNote + '<table class="data-cards"><thead><tr>'
-      + '<th style="text-align:left">模型名称</th>'
-      + '<th style="text-align:center;width:76px">区域</th>'
-      + '<th style="text-align:left">账号</th>'
-      + '<th>请求数</th><th>失败</th><th>总 Token</th><th style="min-width:190px">输入 / 输出 / 思考</th>'
-      + '<th>首字延迟 (TTFT)</th><th>生成速度</th><th>端到端耗时</th><th>缓存命中率</th><th>用量占比</th>'
-      + '<th class="pricing-col" style="color:var(--warn)">估算价格</th>'
-      + '</tr></thead><tbody>' + summaryRow + rows + '</tbody></table>';
-    applyTableSort('perfMatrix');
-  }
-
-}
-
-async function loadAnalytics(){
-  try {
-    // 载荷永远按当前选中的窗口取，它的 window 桶就是第一列要展示的数字。
-    const data = await getJSON('/usage/analytics' + analyticsQuery(), POLL_READ);
-    renderAnalytics(data);
-    loadUsageSeries();
-    loadRemainingUsage();
-    loadCreditGrants();
-  } catch(err) {
-    console.error('loadAnalytics failed:', err);
-  }
-}
 
 // ---------------------------------------------------------------------------
 // 剩余用量估算（/usage/remaining）
@@ -15105,78 +14635,16 @@ function copyRemainingSamples(){
   }).catch(e => toast('复制失败: ' + e.message, 'bad'));
 }
 
-function loadUsageSeries(){
-  getJSON('/usage/timeseries' + analyticsQuery(), POLL_READ)
-    .then(data => { renderUsageSeries(data); renderCreditHistory(data); })
-    .catch(() => {});
-}
 
-function renderUsageSeries(data){
-  const canvas = document.getElementById('usageSeriesChart');
-  if(!canvas) return;
-  const series = (data && data.series) || [];
-  const summary = document.getElementById('usageSeriesSummary');
-  const totalTokens = series.reduce((sum, b) => sum + (b.total_tokens || 0), 0);
-  const totalCredit = series.reduce((sum, b) => sum + (b.credit || 0), 0);
-  if(summary) summary.textContent = '总 Token ' + fmt(totalTokens) + ' · 扣减积分 ' + fmt(totalCredit)
-    + ' · 桶 ' + (data ? data.bucket_seconds : '-') + 's';
-  const ctx = canvas.getContext('2d');
-  const ratio = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth || 800;
-  const cssH = 220;
-  canvas.width = cssW * ratio;
-  canvas.height = cssH * ratio;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  ctx.clearRect(0, 0, cssW, cssH);
-  if(!series.length){
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-text').trim() || '#64748b';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('当前范围没有请求数据', 12, 24);
-    return;
-  }
-  const pad = {l: 52, r: 16, t: 12, b: 26};
-  const plotW = Math.max(10, cssW - pad.l - pad.r);
-  const plotH = Math.max(10, cssH - pad.t - pad.b);
-  const maxTokens = Math.max(1, ...series.map(b => b.total_tokens || 0));
-  const maxReq = Math.max(1, ...series.map(b => b.requests || 0));
-  const slot = plotW / series.length;
-  const barW = Math.max(1, slot - 2);
-  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-axis').trim() || '#1e293b';
-  ctx.beginPath();
-  ctx.moveTo(pad.l, pad.t);
-  ctx.lineTo(pad.l, pad.t + plotH);
-  ctx.lineTo(pad.l + plotW, pad.t + plotH);
-  ctx.stroke();
-  series.forEach((b, i) => {
-    const h = plotH * (b.total_tokens || 0) / maxTokens;
-    const x = pad.l + slot * i + 1;
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-bar').trim() || 'rgba(56,189,248,.55)';
-    ctx.fillRect(x, pad.t + plotH - h, barW, h);
-  });
-  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() || '#a78bfa';
-  ctx.beginPath();
-  series.forEach((b, i) => {
-    const x = pad.l + slot * (i + 0.5);
-    const y = pad.t + plotH - plotH * (b.requests || 0) / maxReq;
-    if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-text').trim() || '#64748b';
-  ctx.font = '10px monospace';
-  ctx.fillText(fmt(maxTokens), 4, pad.t + 8);
-  ctx.fillText('0', 4, pad.t + plotH);
-  const tsLabel = t => new Date(t * 1000).toLocaleString();
-  const firstLabel = tsLabel(series[0].at);
-  const lastLabel = tsLabel(series[series.length - 1].at);
-  ctx.fillText(firstLabel, pad.l, cssH - 6);
-  ctx.fillText(lastLabel, Math.max(pad.l, cssW - pad.r - ctx.measureText(lastLabel).width), cssH - 6);
-}
 
 async function loadCreditHistory(btn){
   if(btn) btn.disabled = true;
   try{
-    const data = await getJSON('/usage/timeseries' + analyticsQuery(), POLL_READ);
-    renderUsageSeries(data);
+    // 时间窗跟看板 B 版的 state.range 对齐；B 版认 'd3'/'d30' 两种粒度，
+    // 落到旧管线时按 'today' 处理（这是 syncOldRange 的口径）。
+    const r = (typeof state !== 'undefined' && state && state.range) ? state.range : 'today';
+    const range = (r === 'd3' || r === 'd30') ? 'today' : r;
+    const data = await getJSON('/usage/timeseries?realm=all&range=' + encodeURIComponent(range), POLL_READ);
     renderCreditHistory(data);
     if(btn) toast('积分扣减历史已刷新', 'ok');
   }catch(e){
@@ -15290,281 +14758,6 @@ function renderCreditGrants(data){
 }
 
 /* 第一列的口径随范围切换，标签必须跟着走，否则「本周」的数字会被当成「今日」读。 */
-const RANGE_LABELS = {today:'今日', week:'本周', month:'本月', custom:'自定义区间', all:'全部历史'};
-function rangeLabel(){ return RANGE_LABELS[analyticsRange] || RANGE_LABELS.today; }
-
-function renderAnalytics(data){
-  if(!data || !data.summary) return;
-  const sumWindow = data.summary.window || {};
-  const sumAll = data.summary.all_time || {};
-  const currentSum = sumWindow;
-
-  // KPI 1: follows the range selector. It used to be hard-wired to the Today
-  // bucket while the card next to it was hard-wired to All Time, so the range
-  // buttons appeared to do nothing to the headline number.
-  const elTodayTok = document.getElementById('kpiTodayTokens');
-  const elTodayDetail = document.getElementById('kpiTodayTokensDetail');
-  const elTodayTitle = document.getElementById('kpiRangeTokenTitle');
-  if(elTodayTitle) elTodayTitle.textContent = rangeLabel() + '消耗 Token';
-  if(elTodayTok) elTodayTok.textContent = fmtCompact(currentSum.total_tokens || 0);
-  if(elTodayDetail) elTodayDetail.innerHTML =
-    '<span style="color:var(--accent)">输入 ' + fmtCompact(currentSum.prompt_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--accent2)">输出 ' + fmtCompact(currentSum.completion_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--think)">思考 ' + fmtCompact(currentSum.reasoning_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--ok)">缓存 ' + fmtCompact(currentSum.cached_tokens || 0) + '</span>';
-
-  // KPI 2: always the all-time figure, as the stable reference next to KPI 1.
-  const elTotalTok = document.getElementById('kpiTotalTokens');
-  const elTotalDetail = document.getElementById('kpiTotalTokensDetail');
-  if(elTotalTok) elTotalTok.textContent = fmtCompact(sumAll.total_tokens || 0);
-  if(elTotalDetail) elTotalDetail.innerHTML =
-    '<span style="color:var(--accent)">输入 ' + fmtCompact(sumAll.prompt_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--accent2)">输出 ' + fmtCompact(sumAll.completion_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--think)">思考 ' + fmtCompact(sumAll.reasoning_tokens || 0) + '</span>' +
-    ' <span style="color:var(--dim-light)">/</span> ' + '<span style="color:var(--ok)">缓存 ' + fmtCompact(sumAll.cached_tokens || 0) + '</span>' +
-    // 只有「所选范围已经覆盖了日志里的全部请求」这一种情况需要说明：两张卡数字
-    // 相同不是计数器坏了，而是没有更早的数据。
-    ((analyticsRange !== 'all' && (sumAll.total_tokens || 0) === (sumWindow.total_tokens || 0) && (sumAll.total_tokens || 0) > 0)
-      ? '<br><span style="color:var(--dim);font-size:11px">与' + rangeLabel() + '相同：所选范围已覆盖日志中的全部请求</span>'
-      : '');
-
-  // KPI 3: 网关平均生成速度（耗时作为副文案，速度与耗时是一对）
-  const elAvgSpeed = document.getElementById('kpiAvgSpeed');
-  const elAvgElapsed = document.getElementById('kpiAvgElapsed');
-  if(elAvgSpeed) elAvgSpeed.innerHTML = (currentSum.speed_avg ? currentSum.speed_avg.toFixed(1) : '0.0') + ' <span style="font-size:12px;font-weight:400;color:var(--dim)">tok/s</span>';
-  if(elAvgElapsed) elAvgElapsed.textContent = '平均耗时 ' + ms(currentSum.elapsed_ms_avg);
-
-  // KPI 4: 平均首字延迟，单独一张卡
-  const elAvgLatency = document.getElementById('kpiAvgLatency');
-  if(elAvgLatency) elAvgLatency.textContent = ms(currentSum.ttft_ms_avg);
-
-  // KPI 5: 缓存命中率
-  const elCacheRate = document.getElementById('kpiCacheRate');
-  if(elCacheRate) elCacheRate.textContent = (currentSum.cache_hit_pct != null ? currentSum.cache_hit_pct.toFixed(1) : '0.0') + '%';
-  const elCacheDetail = document.getElementById('kpiCacheDetail');
-  if(elCacheDetail) elCacheDetail.textContent = '缓存 ' + fmtCompact(currentSum.cached_tokens || 0) + ' tokens · 提示词前缀命中复用比';
-
-  // KPI 6: 请求数（成功数）与 KPI 7: 成功率，拆成两张卡
-  const elReqTitle = document.getElementById('kpiReqTitle');
-  const elReqCount = document.getElementById('kpiReqCount');
-  const elReqDetail = document.getElementById('kpiReqDetail');
-  const elSuccessRate = document.getElementById('kpiSuccessRate');
-  const elSuccessDetail = document.getElementById('kpiSuccessDetail');
-  if(elReqTitle) elReqTitle.textContent = (analyticsRange === 'all' ? '累计' : rangeLabel()) + '请求数';
-  const okReq = currentSum.requests || 0;
-  const errReq = currentSum.errors || 0;
-  const totalReq = okReq + errReq;
-  const successPct = totalReq > 0 ? ((okReq / totalReq) * 100).toFixed(1) : '100.0';
-  if(elReqCount) elReqCount.textContent = fmt(okReq) + ' 次';
-  if(elReqDetail) elReqDetail.textContent = '含失败共 ' + fmt(totalReq) + ' 次';
-  if(elSuccessRate) elSuccessRate.innerHTML = '<span style="color:' + (errReq ? 'var(--warn)' : 'var(--accent2)') + '">' + successPct + '%</span>';
-  if(elSuccessDetail) elSuccessDetail.textContent = '失败 ' + fmt(errReq) + ' 次';
-
-  // KPI 8: API 等价花费（跟随范围切换；与网关页一致，人民币与美元同时给出）
-  if(data.usd_cny) costUsdRate = Number(data.usd_cny) || costUsdRate;
-  const elCostRange = document.getElementById('kpiCostRange');
-  const elCostValue = document.getElementById('kpiCostValue');
-  const elCostDetail = document.getElementById('kpiCostDetail');
-  if(elCostRange) elCostRange.textContent = '(' + rangeLabel() + ')';
-  // 关闭时卡片留在原地（观感不变），数值显示「—」：后端根本没有折算金额，
-  // 这里不能把「没有数」渲染成 ￥0.000。
-  if(elCostValue) elCostValue.innerHTML = PRICING_ON
-    ? fmtCostBoth(currentSum.cost_cny != null ? currentSum.cost_cny : 0, 14) : '—';
-  if(elCostDetail) elCostDetail.innerHTML = (PRICING_ON && analyticsRange !== 'all' && sumAll.cost_cny != null)
-    ? '总计（全部历史）' + fmtCostBoth(sumAll.cost_cny, 11) + '<br>按 OpenRouter 模型价折算'
-    : '按 OpenRouter 模型价折算的等价 token 花费';
-
-  // Table 1: 账号透视表
-  const acctTbody = document.getElementById('analyticsAccountTbody');
-  const acctCountEm = document.getElementById('analyticsAcctCount');
-  let accts = (data.accounts || []).filter(a => {
-    if(a.uid === '(unattributed)' && !((a.window || {}).requests || a.all_time.requests)) return false;
-    return true;
-  });
-  if(acctCountEm) acctCountEm.textContent = accts.length ? '(' + accts.length + ' 个账号)' : '';
-
-  if(acctTbody){
-    if(!accts.length){
-      acctTbody.innerHTML = '<tr><td colspan="8" class="empty">暂无账号用量数据</td></tr>';
-    } else {
-      acctTbody.innerHTML = accts.map(a => {
-        // window 桶就是当前选中的范围，也就是这张表要展示的口径。
-        const st = a.window || {};
-        const modelsMap = a.window_models || {};
-        const entries = Object.entries(modelsMap || {}).sort((x, y) => (y[1].tokens || 0) - (x[1].tokens || 0));
-        
-        let pills = '<span style="color:var(--dim)">无调用</span>';
-        if(entries.length){
-          pills = entries.map(([mid, ms]) => {
-            return '<span class="model-pill">'
-              + '<b style="color:var(--fg)">' + esc(mid) + '</b>: '
-              + ms.requests + '次 · <b style="color:var(--accent)">' + fmtCompact(ms.tokens) + '</b> tok'
-              + '</span>';
-          }).join('');
-        }
-
-        const realmBadge = a.realm === 'cn'
-          ? '<span class="badge warn" style="font-size:10px">国内版</span>'
-          : '<span class="badge s" style="font-size:10px">国际版</span>';
-
-        let creditStr = '<span style="color:var(--dim)">—</span>';
-        if(a.credits && a.credits.remain != null){
-          if(a.credits.size){
-            creditStr = '<b style="color:var(--accent2)">' + fmt(a.credits.remain) + '</b> <span style="color:var(--dim);font-size:11px">/ ' + fmt(a.credits.size) + ' 积分</span>';
-          } else {
-            creditStr = '<b style="color:var(--accent2)">' + fmt(a.credits.remain) + '</b> <span style="color:var(--dim);font-size:11px">积分</span>';
-          }
-        }
-
-        return '<tr>'
-          + '<td style="text-align:left">'
-          +   '<b>' + esc(a.nickname || a.uid) + '</b>'
-          +   '<div style="color:var(--dim);font-size:11px;font-family:monospace">' + esc((a.uid || '').slice(0, 10)) + '...</div>'
-          + '</td>'
-          + '<td>' + realmBadge + '</td>'
-          + '<td>' + creditStr + '</td>'
-          + '<td>' + fmt(st.requests || 0) + '</td>'
-          + '<td><b style="color:var(--accent)">' + fmtCompact(st.total_tokens || 0) + '</b></td>'
-          + '<td><b style="color:var(--accent2)">' + (st.credit != null ? Number(st.credit).toFixed(2) : '0.00') + '</b></td>'
-          + '<td style="text-align:left;max-width:440px">' + pills + '</td>'
-          + '<td class="pricing-col" style="color:var(--warn)" title="OpenRouter 价估算：按 OpenRouter 公布的模型价折算，覆盖该账号在所选区间内的请求；按条件定价的模型（输入长度阈值或时段）按每条请求取档；单条请求实际用的策略、三档单价与匹配来源见「最近请求」里那条的悬停提示">'
-          +   (st.cost_cny != null && st.cost_cny > 0 ? fmtCost(st.cost_cny) : '<span style="color:var(--dim)">—</span>')
-          + '</td>'
-          + '</tr>';
-      }).join('');
-    }
-    applyTableSort('analyticsAccountTable');
-  }
-
-  renderKeyTable(data);
-}
-
-/* 按 API Key 的归属表。口径与账号表完全一致（window 桶 = 当前选中范围），
-   所以两张表的请求数应当相等；对不上是数据问题，不是渲染能修的，故这里
-   不隐藏任何会兜差额的行——(未知 key) 正是用来兜住差额的。唯一能收起的是
-   「(切换前)」：它是升级前的历史尾巴，只减不增，收起与否都不影响对账。 */
-
-/* 「(切换前)」行开关的状态。表格每 5 秒重绘一次，所以状态不能存在渲染函数
-   里，得放在外面；偏好与账号区折叠一样存服务端的 accounts/settings.json
-   （key_before_hidden），不用 localStorage。 */
-let keyBeforeHidden = false;
-let lastKeyData = null;
-/* 唯一的写入口：内存状态、复选框与表格一起改，三者不会不同步。 */
-function applyKeyBeforeHidden(hidden){
-  keyBeforeHidden = hidden === true;
-  const box = document.getElementById('keyBeforeToggle');
-  if(box) box.checked = keyBeforeHidden;
-  if(lastKeyData) renderKeyTable(lastKeyData);
-  return keyBeforeHidden;
-}
-// 显式选择走既有的 settings save 通道（一个键的 patch，不动别的设置）。
-async function onKeyBeforeToggle(box){
-  const next = !!(box && box.checked);
-  applyKeyBeforeHidden(next);
-  try {
-    await postJSON('/settings/save', {key_before_hidden: next});
-  } catch(e) {
-    toast('「(切换前)」行开关保存失败: ' + e.message, 'bad');
-  }
-}
-function keyRealmCell(k){
-  if(k.source === 'bucket') return '<span style="color:var(--dim)">—</span>';
-  if(k.realm === 'cn') return '<span class="badge warn" style="font-size:10px">国内版</span>';
-  if(k.realm === 'intl') return '<span class="badge s" style="font-size:10px">国际版</span>';
-  // realm 为空的 Key 不绑出口，而是跟着模型走：它可能两个出口都用过，
-  // 那时代理返回的积分是两个价格体系相加的结果，必须说出来。
-  if(k.cross_realm) return '<span class="badge warn" style="font-size:10px">跟随 · 混合</span>';
-  return '<span class="badge off" style="font-size:10px">跟随</span>';
-}
-
-function keyModelPills(k){
-  const pills = (k.models || []).map(m =>
-    '<span class="model-pill">'
-    + '<b style="color:var(--fg)">' + esc(m.model) + '</b>: '
-    + m.requests + '次 · <b style="color:var(--accent)">' + fmtCompact(m.tokens) + '</b> tok'
-    + '</span>');
-  const rest = k.models_other;
-  if(rest){
-    pills.push('<span class="model-pill">'
-      + '<b style="color:var(--dim)">' + esc(rest.model || '(其他)') + '</b> '
-      + '<span style="color:var(--dim)">' + (rest.models || 0) + ' 个模型 · </span>'
-      + rest.requests + '次 · ' + fmtCompact(rest.tokens) + ' tok</span>');
-  }
-  return pills.length ? pills.join('') : '<span style="color:var(--dim)">无调用</span>';
-}
-
-function renderKeyTable(data){
-  const tbody = document.getElementById('analyticsKeyTbody');
-  if(!tbody) return;
-  const countEm = document.getElementById('analyticsKeyCount');
-  const note = document.getElementById('analyticsKeyNote');
-  const keys = data.keys || [];
-  lastKeyData = data;
-  const wrap = document.getElementById('keyBeforeSwitch');
-  const box = document.getElementById('keyBeforeToggle');
-  const hasBefore = keys.some(k => k.key === '__before_keys__');
-  // 新装的环境没有这一行，就没得收，开关也不该出现。
-  if(wrap) wrap.style.display = hasBefore ? '' : 'none';
-  if(box) box.checked = keyBeforeHidden;
-  const shown = keyBeforeHidden ? keys.filter(k => k.key !== '__before_keys__') : keys;
-  if(countEm) countEm.textContent = shown.length ? '(' + shown.length + ' 把)' : '';
-
-  if(note){
-    const named = keys.filter(k => k.source !== 'bucket');
-    const cross = named.filter(k => k.cross_realm).length;
-    const parts = [];
-    if(!named.length) parts.push('设置里还没有任何 API Key，全部流量都落在下面的未归属行里。');
-    if(cross) parts.push('有 ' + cross + ' 把 Key 没有绑定出口，它的积分由国际版与国内版两套价格相加而来，只能当量级看。');
-    // 收起那行时就不再解释那行，否则读者找不到话里指的东西。
-    if(!keyBeforeHidden) parts.push('Key 维度只从本次升级之后开始记录：更早的请求没有这个字段，会一直留在「(切换前)」里且不会再增长。');
-    note.innerHTML = parts.join(' ');
-  }
-
-  if(!shown.length){
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无 API Key 用量数据</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = shown.map(k => {
-    const st = k.window || {};
-    const sub = {panel:'面板 Key', launcher:'启动参数', bucket:'未归属', builtin:'内置'}[k.source] || '';
-    let nameCell = '<td style="text-align:left" data-label="API Key">'
-      + '<b>' + esc(k.name || k.key) + '</b>';
-    if(sub || !k.enabled){
-      nameCell += '<div style="font-size:11px">'
-        + (sub ? '<span style="color:var(--dim)">' + esc(sub) + '</span>' : '')
-        + (!k.enabled && k.source === 'panel' ? '<span class="badge off mini">已禁用</span>' : '')
-        + '</div>';
-    }
-    nameCell += '</td>';
-
-    const reqCell = '<td data-label="请求次数">' + fmt(st.requests || 0) + ' 次'
-      + (st.errors ? '<span style="color:var(--bad);font-size:11px"> · 失败 ' + fmt(st.errors) + '</span>' : '')
-      + '</td>';
-    const tokCell = '<td data-label="消耗总 Token"><b style="color:var(--accent)">'
-      + fmtCompact(st.total_tokens || 0) + '</b></td>';
-    const splitCell = '<td data-label="输入 · 输出 · 思考" style="font-size:12px">'
-      + '<span style="color:var(--accent)">' + fmtCompact(st.prompt_tokens || 0) + '</span>'
-      + ' <span style="color:var(--dim-light)">/</span> '
-      + '<span style="color:var(--accent2)">' + fmtCompact(st.completion_tokens || 0) + '</span>'
-      + ' <span style="color:var(--dim-light)">/</span> '
-      + '<span style="color:var(--think)">' + fmtCompact(st.reasoning_tokens || 0) + '</span>'
-      + '</td>';
-    const cacheCell = '<td data-label="缓存命中">'
-      + (st.cache_hit_pct != null ? st.cache_hit_pct.toFixed(1) : '0.0') + '%</td>';
-    const creditCell = '<td data-label="消耗积分"><b style="color:var(--accent2)">'
-      + (st.credit != null ? Number(st.credit).toFixed(2) : '0.00') + '</b></td>';
-    const modelCell = '<td style="text-align:left;max-width:440px" data-label="调用的模型分布">'
-      + keyModelPills(k) + '</td>';
-
-    return '<tr>'
-      + nameCell
-      + '<td data-label="出口">' + keyRealmCell(k) + '</td>'
-      + reqCell + tokCell + splitCell + cacheCell + creditCell + modelCell
-      + '</tr>';
-  }).join('');
-  applyTableSort('analyticsKeyTable');
-}
 </script>
 <script>
 /* ============================================================
@@ -16511,17 +15704,12 @@ try { ensureHoverTip(); } catch(e){}
 
 /* 剩余用量 / 积分扣减 / 积分获取历史：数据由原版管道（loadRemainingUsage /
    loadCreditHistory / loadCreditGrants）画进折叠区；展开时按需再刷新一次
-   （老版是每次进入看板都拉，这里收窄到按需）。积分扣减历史要跟随本页的范围
-   选择器（旧管线的 analyticsRange 只认 today/week/month/all/custom）。 */
-function syncOldRange(){
-  const r = state.range;
-  analyticsRange = (r === 'd3' || r === 'd30') ? 'today' : r;
-}
+   （老版是每次进入看板都拉，这里收窄到按需）。 */
 {
   const rb = $('foldRemainBox');
   if (rb) rb.addEventListener('toggle', () => { if (rb.open) { try{ loadRemainingUsage(); }catch(e){} } });
   const cb = $('foldCreditsBox');
-  if (cb) cb.addEventListener('toggle', () => { if (cb.open) { try{ syncOldRange(); loadCreditHistory(); }catch(e){} } });
+  if (cb) cb.addEventListener('toggle', () => { if (cb.open) { try{ loadCreditHistory(); }catch(e){} } });
   const gb = $('foldGrantsBox');
   if (gb) gb.addEventListener('toggle', () => { if (gb.open) { try{ loadCreditGrants(); }catch(e){} } });
 }

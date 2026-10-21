@@ -1,7 +1,7 @@
 # WorkBuddy2API-Hub — 国际版、国内版多账号网关中枢
 
 <p align="center">
-  <a href="https://github.com/ardeyouxipianyi/workbuddy2api-hub/releases"><img src="https://img.shields.io/badge/Release-v1.7.24-2496ED?style=flat-square" alt="Version 1.7.24"></a>
+  <a href="https://github.com/ardeyouxipianyi/workbuddy2api-hub/releases"><img src="https://img.shields.io/badge/Release-v1.7.25-2496ED?style=flat-square" alt="Version 1.7.25"></a>
   <img src="https://img.shields.io/badge/Python-3.9+-blue.svg?style=flat-square" alt="Python">
   <img src="https://img.shields.io/badge/API-OpenAI_Compatible-412991?style=flat-square" alt="OpenAI API">
   <img src="https://img.shields.io/badge/Dual_Realm-Intl_&_CN-0DBD8B?style=flat-square" alt="Dual Realm">
@@ -153,7 +153,7 @@ python tests/run_all.py            # 全部套件
 python tests/run_all.py realm      # 只跑名字里含 realm 的
 ```
 
-- 205 个套件：153 个 Python + 52 个 JS；JS 需要 PATH 上有 `node`，缺失时会跳过并提示。
+- 202 个套件：153 个 Python + 49 个 JS；JS 需要 PATH 上有 `node`，缺失时会跳过并提示。
 - `tests/_mobile_check.py` 是独立的 Playwright 手机/桌面布局检查器（需自行安装 Playwright），按需手动运行，不在上面的套件集里。
 - CI（`.github/workflows/tests.yml`）跑同一条命令：Ubuntu 上 python 3.9 与 3.12（3.9 是本项目声称的最低版本），Windows 上 python 3.12；推送 `v*` tag 时额外断言 **tag == 源码版本**（`-ci` 演练 tag 豁免）。
 
@@ -462,6 +462,10 @@ export ANTHROPIC_API_KEY="你在看板设置中添加并绑定的API_Key"
 
 ### Unreleased
 
+- **API Key 独立成页**：API Key 清单、出口绑定与已删除 Key 记录从「设置」页拆出，成为顶部独立页签「API Key」，设置页只留面板自身的开关与默认值；数据仍由 `/settings` 统一拉取，两处共用同一份内存状态。窄屏表单规则（`min-height` / `flex-wrap`）同步覆盖新页面，「鉴权 Key 请前往『设置 → API Key 与出口绑定』页复制」改为「请前往『API Key』页复制」。 / The API Key list, exit binding and deleted-key history move out of Settings into their own top-level "API Key" tab; Settings keeps only the panel's own switches and defaults. Both views still read the same `/settings` payload and share one in-memory state. The narrow-screen form rules now cover the new page too, and the "copy the auth key from Settings → API Key & Exit Binding" hint now points at the API Key page.
+- **「国际版模型清单」独立成块**：国内版视图下顺带列出的国际版清单原先挂在「网关模型清单」区块内部，现在单独成为一个区块，与其他窗口一样有边框、圆角和侧栏导航入口；国际版视图下整块收起。 / The Global catalog shown alongside the China view is now its own section instead of a nested block inside the gateway catalog — same border, radius and sidebar-nav entry as every other window, and it still collapses entirely in the Global view.
+- **「签到与活跃记录」窗口限高**：在全局「面板窗口限高」之外再压到 560px（全局值更低时以全局为准），流水日志不再占满整屏。 / The check-in & activity log window gets its own 560px cap on top of the global window-height setting (the lower of the two wins), so the log no longer fills the screen.
+- **清理死代码**：删除 Bento 看板重写后被 `window.loadAnalytics = wbaTick` 覆盖的整条旧管线（旧 `loadAnalytics` / `loadAnalyticsMatrix` / `renderAnalytics` / `renderKeyTable` / `renderPerfMatrix` / `renderUsageSeries` 及自定义区间工具，约 720 行），以及 8 个无人引用的孤儿 id、9 个残留状态变量、`.key-row-switch` 死 CSS 与失效的 `getElementById` 引用。后端删除 `key_before_hidden` 整条链路（`wb_settings` 的读写函数、`/settings` 的返回字段与保存分支）和旧的单值 `api_key` 写入路径（`set_api_key`、`payload.api_key` 分支、`api_key_set` / `api_key_set_by_panel` / `api_key_masked` 三个返回字段）；`api_key_override` 保留，老部署启动时仍能读回 LAN key。同步删除 3 个只测死代码的套件（`_test_analytics_by_key.js`、`_test_matrix_filters.js`、`_test_usage_share.js`）与 `_test_token_units.js` 的旧 KPI 段，套件数 205 → 202。 / Remove the dead code left behind by the Bento dashboard rewrite: the entire old pipeline shadowed by `window.loadAnalytics = wbaTick` (~720 lines), eight unreferenced ids, nine leftover state variables, the dead `.key-row-switch` rule and stale `getElementById` lookups. On the backend, drop the whole `key_before_hidden` chain and the legacy single-value `api_key` write path, keeping `api_key_override` so existing deployments still read their LAN key at startup. Three suites that only exercised dead code were removed along with the old KPI section of `_test_token_units.js`, taking the suite count from 205 to 202.
 - **签到与活跃记录表格列对齐**：「时间 / 账号 / 任务」三列的表头写了左对齐，单元格却沿用全局的右对齐默认，表头与数据错开，「国内版签到」这类短文本贴着单元格右边。现在 td 补上与表头一致的对齐方式。 / Fix the column alignment in the check-in / activity log: the 时间 / 账号 / 任务 headers are left-aligned while their cells fell back to the global right-aligned default, so headers and data drifted apart. The cells now carry the same alignment as their headers.
 - **国内版视图下直接列出国际版模型清单**：「网关模型清单」下方新增一栏「国际版模型清单」，国内版视图下自动显示，不用切视图就能看到另一版有哪些模型、倍率与能力；只读、不带「一键配置」勾选框（勾选仍是全局一份，只在主表操作），国际版视图下自动收起。两栏共用同一套行渲染与来源横幅，`/v1/models?realm=intl` 随主表一起取、失败保留上一次内容。中英繁三套文案已补齐。 / The China view now also lists the Global catalog: a read-only 「国际版模型清单」 section under the gateway model table shows the other realm's models, rates and capabilities without switching views. It carries no one-click-config checkboxes (the selection stays global and is edited on the main table) and collapses in the Global view. Both tables share one row renderer and source banner; `/v1/models?realm=intl` is fetched alongside the main list and a failure keeps the previous contents. Translations added for EN / Traditional Chinese.
 - **网关运行日志终端加高**：桌面端日志容器从 620px 加到 860px，同一屏能多看出约 15 行日志；默认「面板窗口限高」同步从 640px 抬到 880px——限高是靠 `max-height` 盖住终端的，默认值不跟着抬的话终端会被悄悄压回 640px，加高就成了空改。窄屏（≤640px）仍走 `height:60vh` 那条规则，不受影响；已在设置页存过限高值的安装保持自己那份数值不变。新增 1 项断言钉住「终端高度必须低于默认限高」，只抬一边即会变红。 / The gateway log terminal is taller: 620px → 860px on desktop, roughly fifteen more log lines per screen, and the default panel window height cap moves with it (640px → 880px) — the cap covers the terminal with `max-height`, so a default left at 640px would quietly squeeze the terminal back and make the taller height a no-op. Phones (≤640px) still use `height:60vh` and are unaffected, and an install that has already saved a cap keeps its own value. One new assertion pins that the terminal's height must stay below the default cap.
