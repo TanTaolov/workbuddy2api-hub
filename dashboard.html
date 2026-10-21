@@ -6489,8 +6489,8 @@ function renderIntlModelsPanel(){
   const panel = document.getElementById('modelsIntlPanel');
   if(!panel) return;
   const show = window.VIEW_REALM === 'cn';
-  // inline：行内 h2 是侧栏导航取标题的入口，且会继承 section 的 block 排版。
-  panel.style.display = show ? 'inline' : 'none';
+  // block：section 是块级元素，需要使用 block 而不是 inline 来保持正确的容器样式。
+  panel.style.display = show ? 'block' : 'none';
   if(!show) return;
   const count = document.getElementById('modelsIntlCount');
   if(count) count.textContent = INTL_MODELS_DATA.length ? '（共 ' + INTL_MODELS_DATA.length + ' 个）' : '';
