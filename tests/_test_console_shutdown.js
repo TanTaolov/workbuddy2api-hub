@@ -1,7 +1,8 @@
-/* 顶栏两个按钮的行为（#426 / #427）。
+/* 顶栏按钮的行为（#426 / #427）。
 
-   1. 眼睛按钮不再请求 /console/toggle，也不再让服务端 spawn 进程：它直接
-      在新窗口打开 ?tab=logs，Windows / macOS / 容器同一条路。
+   1. 运行日志统一走顶部「运行日志」页签：顶栏不再有「在新窗口打开运行日志」
+      的眼睛按钮，`toggleConsoleWindow` 随之删除；`/console/toggle` 也不再被
+      请求（服务端端点保留为旧面板的兼容接口）。
    2. 关闭服务不能凭一次 postJSON 的成败宣布成功：容器或守护进程会把进程
       重新拉起，所以必须用 /health 复核；仍在运行时要如实提示。
 
@@ -14,17 +15,19 @@ const {loadDashboard} = require('./_dashboard_sandbox.js');
 
 const html = dashboardHtml();
 
-/* ---- 1. 结构：按钮接的是新窗口，不是服务端进程 ------------------------- */
+/* ---- 1. 结构：顶栏不再有日志窗口按钮 ---------------------------------- */
 
-assert.ok(/id="btnConsoleToggle"/.test(html), '顶栏要有日志窗口按钮');
-assert.ok(/title="在新窗口打开运行日志"/.test(html),
-  '按钮文案要说明它是打开窗口，不是开关一个进程');
-assert.ok(/window\.open\('\/dashboard\?tab=logs'/.test(html),
-  '眼睛按钮要直接 window.open 运行日志页');
+assert.ok(!/id="btnConsoleToggle"/.test(html),
+  '顶栏不应再有日志窗口按钮（运行日志走顶部页签）');
+assert.ok(!/title="在新窗口打开运行日志"/.test(html),
+  '按钮文案应一并移除');
+assert.ok(!/function toggleConsoleWindow/.test(html),
+  'toggleConsoleWindow 应随按钮一起删除');
 assert.ok(!/postJSON\('\/console\/toggle'/.test(html),
   '页面不应再请求 /console/toggle');
+assert.ok(/id="btnNavLogs"/.test(html), '运行日志的入口是顶部页签');
 
-/* ---- 2. 行为：弹窗成功 / 被拦截 --------------------------------------- */
+/* ---- 2. 关闭服务：仍活着就不能说「已关闭」 ----------------------------- */
 
 const toasts = [];
 let healthOk = true;
@@ -40,23 +43,6 @@ const page = loadDashboard({
   },
 });
 page.toast = (msg, kind) => toasts.push({msg: String(msg), kind: kind});
-
-let opened = null;
-page.open = (url, name, features) => {
-  opened = {url: String(url), name: String(name), features: String(features)};
-  return {focus: () => {}};
-};
-page.toggleConsoleWindow();
-assert.deepStrictEqual(opened.url, '/dashboard?tab=logs');
-assert.strictEqual(opened.name, 'wb-logs');
-assert.strictEqual(toasts.pop().kind, 'ok', '打开成功要给 ok 提示');
-
-page.open = () => null;
-toasts.length = 0;
-page.toggleConsoleWindow();
-assert.strictEqual(toasts.pop().kind, 'bad', '弹窗被拦截要明确报错');
-
-/* ---- 3. 关闭服务：仍活着就不能说「已关闭」 ----------------------------- */
 
 (async () => {
   const shutdownButton = () => page.document.getElementById('btnGatewayShutdown');

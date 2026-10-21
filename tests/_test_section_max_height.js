@@ -9,7 +9,7 @@
      顶部漏出 18px 的滚动内容）、首行的 margin 必须折成 padding（否则下方那条缝
      同样漏内容）。两条都是「少写不会报错、只会难看」的规则，所以在这里钉住。
    - 0 是有意义的取值（不限），不能被当作「缺省」吞掉；字段缺失/存坏则回落默认
-     640px，与页签显示、账号折叠那几处的口径一致。
+     880px，与页签显示、账号折叠那几处的口径一致。
    - 日志终端自带 620px 高度，限高同样要盖得住它（max-height 只在更小时生效）。
 
    Run with Node: node tests/_test_section_max_height.js
@@ -43,7 +43,7 @@ check(/body\.win-capped \.main-page section>:first-child\{padding-top:14px\}/.te
 
 check(/<h2>面板窗口限高 <em id="setWinMaxHeightState"><\/em><\/h2>/.test(html),
   'dashboard.html 里找不到「面板窗口限高」区块标题');
-check(/<input id="setWinMaxHeight" type="number" min="0" max="4000" step="20" value="640"/.test(html),
+check(/<input id="setWinMaxHeight" type="number" min="0" max="4000" step="20" value="880"/.test(html),
   '找不到限高输入框 #setWinMaxHeight（或 min/max/step/默认值对不上）');
 check(/onclick="saveWinMaxHeight\(this\)"/.test(html),
   '找不到保存按钮（saveWinMaxHeight）');
@@ -143,16 +143,16 @@ const saves = () => calls.filter(c => c.url === '/settings/save');
 const settle = () => new Promise(resolve => setImmediate(resolve));
 
 (async () => {
-  // 2a. 服务端没存过这个字段：按默认 640px 限高。
+  // 2a. 服务端没存过这个字段：按默认 880px 限高。
   SETTINGS = {pricing_enabled: false, version: 'v1.6.19'};
   await api.loadSettings(true);
   await settle();
   check('字段缺失时挂上限高类', body().classList.contains('win-capped') === true);
-  check('字段缺失时变量是默认 640px', rootVar() === '640px', rootVar());
-  check('字段缺失时输入框填 640', element('setWinMaxHeight').value === '640',
+  check('字段缺失时变量是默认 880px', rootVar() === '880px', rootVar());
+  check('字段缺失时输入框填 880', element('setWinMaxHeight').value === '880',
     element('setWinMaxHeight').value);
-  check('字段缺失时状态文案是 (当前 640px)',
-    element('setWinMaxHeightState').textContent === '(当前 640px)',
+  check('字段缺失时状态文案是 (当前 880px)',
+    element('setWinMaxHeightState').textContent === '(当前 880px)',
     element('setWinMaxHeightState').textContent);
 
   // 2b. 存过 500：恢复。
@@ -179,14 +179,14 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
   check('0 时输入框是 0', element('setWinMaxHeight').value === '0',
     element('setWinMaxHeight').value);
 
-  // 2d. 存坏了：回落默认 640px（与页签显示、账号折叠的坏值口径一致），
+  // 2d. 存坏了：回落默认 880px（与页签显示、账号折叠的坏值口径一致），
   //     而不是「不限」——那样坏一次文件就静默把功能关了。
   for (const bad of ['garbage', null, -5, NaN, Infinity, {}, []]) {
     SETTINGS = {pricing_enabled: false, section_max_height: bad};
     await api.loadSettings(true);
     await settle();
     check('坏值应回落默认限高: ' + JSON.stringify(bad),
-      body().classList.contains('win-capped') === true && rootVar() === '640px',
+      body().classList.contains('win-capped') === true && rootVar() === '880px',
       rootVar());
   }
 
@@ -275,7 +275,7 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
     api.i18n.translate('已取消窗口限高（不限）') === 'Height cap removed (no limit)',
     api.i18n.translate('已取消窗口限高（不限）'));
   check('英文状态文案命中（当前/不限复用既有词条）',
-    api.i18n.translate('(当前 640px)') === '(Current 640px)',
+    api.i18n.translate('(当前 880px)') === '(Current 880px)',
     api.i18n.translate('(当前 640px)'));
   check('正体词条命中', api.i18n.translateHant('面板窗口限高') === '面板視窗限高',
     api.i18n.translateHant('面板窗口限高'));

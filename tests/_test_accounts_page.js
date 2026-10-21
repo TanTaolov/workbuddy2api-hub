@@ -139,11 +139,11 @@ assert.ok(/PRODUCT_ORDER = \['workbuddy', 'vscode', 'cli'\]/.test(script),
 // 各账号身分不一致时不能显示成其中某一种
 assert.ok(/cur \? PRODUCT_SHORT\[cur\] : '混合'/.test(script),
   '身分不一致时应显示「混合」');
-// 英文词条齐全，否则切到 EN 时这一块是中文
+// 英文词条齐全，否则切到 EN 时这一块是中文。
+// 「将把全部账号的出站身份切换为 」「？（含另一个版本）」都是切换前确认框的
+// 文案：确认框已删除（改为点击即切），这两条词条随之移除，这里不再要求它们存在。
 for(const [zh, en] of [['一键切换所有出站身份：', 'Switch all outbound identities: '],
                        ['混合', 'mixed'],
-                       ['将把全部账号的出站身份切换为 ', 'Switch the outbound identity of ALL accounts to '],
-                       ['？（含另一个版本）', '? (including the other version)'],
                        ['已把全部账号的出站身份切换为 ', 'Switched the outbound identity of ALL accounts to ']]){
   assert.ok(html.includes("'" + zh + "': '" + en + "'"),
     'DICT 里缺少「' + zh + '」的英文词条');
