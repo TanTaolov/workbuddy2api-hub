@@ -73,10 +73,10 @@
 
 ```bash
 # 官方源（可直连 GitHub 环境）：
-curl -fsSL https://raw.githubusercontent.com/ardeyouxipianyi/workbuddy2api-hub/main/quick-deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/TanTaolov/workbuddy2api-hub/main/quick-deploy.sh | bash
 
 # 国内网络 / NAS 加速（Connection reset 时用）：
-curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/ardeyouxipianyi/workbuddy2api-hub/main/quick-deploy.sh | sudo bash
+curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/TanTaolov/workbuddy2api-hub/main/quick-deploy.sh | sudo bash
 ```
 
 NAS（如飞牛 fnOS）普通用户没有 Docker 权限时，把结尾的 `bash` 换成 `sudo bash`。再次运行同一条命令即平滑升级，账号与用量数据不受影响。
@@ -84,7 +84,7 @@ NAS（如飞牛 fnOS）普通用户没有 Docker 权限时，把结尾的 `bash`
 **部署模式**：默认 `lan`（`8788:8788`，局域网内可访问）。部署到公网服务器、或只想本机能连时，把环境变量放在管道后的 `bash` 前面：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ardeyouxipianyi/workbuddy2api-hub/main/quick-deploy.sh | WB_DEPLOY_MODE=public bash
+curl -fsSL https://raw.githubusercontent.com/TanTaolov/workbuddy2api-hub/main/quick-deploy.sh | WB_DEPLOY_MODE=public bash
 ```
 
 - `local` / `public` 只把宿主端口绑到 `127.0.0.1`，容器内仍是 `HOST=0.0.0.0`（Docker 转发需要）；
@@ -98,7 +98,7 @@ curl -fsSL https://raw.githubusercontent.com/ardeyouxipianyi/workbuddy2api-hub/m
 ```yaml
 services:
   wb-proxy:
-    image: ghcr.io/ardeyouxipianyi/workbuddy2api-hub:latest   # 或 ardeyouxipianyi/workbuddy2api-hub:latest
+    image: ghcr.io/tantaolov/workbuddy2api-hub:latest
     container_name: wb-proxy
     restart: unless-stopped
     ports:
@@ -138,10 +138,10 @@ docker run -d --name wb-proxy-watchtower --restart unless-stopped \
   ```bash
   docker run -d --name wb-proxy --restart unless-stopped -p 8788:8788 \
     -v $(pwd)/accounts:/app/accounts -v $(pwd)/usage:/app/usage \
-    ghcr.io/ardeyouxipianyi/workbuddy2api-hub:latest
+    ghcr.io/tantaolov/workbuddy2api-hub:latest
   ```
 - **鉴权**：容器以 `--lan` 启动，无显式 `API_KEY` 时自动生成 Key 写入 `./accounts/settings.json` 并打印在日志里：`docker compose logs wb-proxy | grep -i "api key"`；
-- **镜像名要带 registry**：写成 `ardeyouxipianyi/workbuddy2api-hub` 会去 Docker Hub 找并报 `pull access denied`，正确写法是 `ghcr.io/ardeyouxipianyi/workbuddy2api-hub:latest`（GHCR 公开包，拉取无需登录）；
+- **镜像名要带 registry**：写成 `tantaolov/workbuddy2api-hub` 会去 Docker Hub 找并报 `pull access denied`，正确写法是 `ghcr.io/tantaolov/workbuddy2api-hub:latest`（GHCR 公开包，拉取无需登录）；
 - **目录权限**：默认以 root（`0:0`）运行；想以宿主用户跑就设 `PUID` / `PGID`（或 `--user $(id -u):$(id -g)`），并确保两个挂载目录对该 uid 可写；
 - **健康检查**：镜像自带 `HEALTHCHECK`（每 30s 探一次 `/health`），`docker ps` 的 STATUS 列会显示 healthy / unhealthy；
 - **源码构建**：`docker compose -f docker-compose.build.yml up -d --build`。
