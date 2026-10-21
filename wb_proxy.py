@@ -278,9 +278,10 @@ def install_console_close_handler():
 # ---------------------------------------------------------------------------
 # 日志窗口
 #
-# 面板的眼睛按钮改为在新窗口打开运行日志页（?tab=logs）。服务端不再 spawn
-# 任何进程：容器 / Linux 上没有窗口可开，Windows 上也不需要第二个 python 进程
-# （#427）。启动脚本仍可单独拉起 console_tail.py，那是命令行通道，与本按钮无关。
+# 面板的运行日志统一走顶部「运行日志」页签（顶栏原来的「在新窗口打开」按钮
+# 已删）。服务端不 spawn 任何进程：容器 / Linux 上没有窗口可开，Windows 上也
+# 不需要第二个 python 进程（#427）。/console/* 端点保留为旧面板的兼容通道。
+# 启动脚本仍可单独拉起 console_tail.py，那是命令行通道，与面板无关。
 # ---------------------------------------------------------------------------
 UPSTREAM = "https://www.workbuddy.ai"
 CHAT_PATH = "/v2/chat/completions"
@@ -18185,8 +18186,9 @@ class Handler(BaseHTTPRequestHandler):
         return self._json(200, info)
 
     def _get_console_state(self):
-        # 按钮不再 spawn 进程，而是在新窗口打开运行日志页。这样 Windows /
-        # macOS / 容器走同一条路，不存在「当前环境开不了窗口」的伪状态（#427）。
+        # 顶栏已没有日志窗口按钮（运行日志走顶部页签）；这条状态接口只为兼容
+        # 旧面板保留，一律报告 mode=web，不存在「当前环境开不了窗口」的伪状态
+        # （#427）。
         return self._json(200, {"supported": True, "mode": "web", "visible": False})
 
     def _route_console_toggle(self):

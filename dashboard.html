@@ -129,6 +129,7 @@ body.win-capped #pageAnalytics section.panel{overflow-y:auto}
 body.win-capped #pageAnalytics section.panel .pbody{overflow-y:clip!important;max-height:none!important;overscroll-behavior:auto}
 body.win-capped .main-page section>:first-child{position:sticky;top:0;z-index:3;
   background:var(--panel);padding-top:18px;margin-bottom:0!important;padding-bottom:14px}
+/* 日志终端自带 860px 高度，限高同样要盖得住它（max-height 只在更小时生效）。 */
 body.win-capped #logTerminalBody{max-height:var(--win-max-h)}
 section h2{margin:0 0 14px;font-size:13px;font-weight:700;color:var(--dim);
   text-transform:uppercase;letter-spacing:.6px}
@@ -151,6 +152,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 #modelsTable .model-pick{width:14px;height:14px;margin:0;flex-shrink:0;cursor:pointer}
 #modelsTable td.model-id-cell label{display:inline-flex;align-items:center;gap:7px;max-width:100%;cursor:pointer}
 #modelsTable td.model-id-cell b{overflow:hidden;text-overflow:ellipsis}
+/* 国内版视图下另挂的国际版清单：同一套列宽与截断规则，只是没有勾选框，
+   模型 ID 列不再需要给复选框留位。 */
+#modelsTableIntl{table-layout:fixed}
+#modelsTableIntl th,#modelsTableIntl td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#modelsTableIntl td.rate-cell{white-space:normal;line-height:1.8}
+#modelsTableIntl td[data-label="思考档位"]{white-space:nowrap}
+#modelsTableIntl td[data-label="默认采样参数"]{white-space:normal}
 th,td{text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);
   font-variant-numeric:tabular-nums;vertical-align:middle}
 th{color:var(--dim);font-weight:600;font-size:12px;white-space:nowrap;background:var(--panel2)}
@@ -479,16 +487,7 @@ a:hover{text-decoration:underline}
 .main-nav-btn{background:transparent;border:1px solid transparent;color:var(--dim);padding:6px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s ease}
 .main-nav-btn:hover{color:var(--fg);background:var(--panel)}
 .main-nav-btn.active{background:var(--panel);color:var(--fg);border-color:var(--line);box-shadow:var(--shadow-sm);font-weight:600}
-/* 项目仓库入口：与顶部导航同行，但不作为一个 Tab 标签。 */
-.gh-link{display:inline-flex;align-items:center;justify-content:center;
-  width:34px;height:32px;border-radius:8px;border:1px solid var(--line);
-  background:var(--panel);color:var(--dim);box-shadow:var(--shadow-sm);
-  transition:all .15s ease}
-.gh-link:hover{color:var(--fg);border-color:var(--line-hover);
-  background:var(--panel2);text-decoration:none;box-shadow:var(--shadow-md)}
-.gh-link svg{width:17px;height:17px;display:block;fill:currentColor}
-
-/* 顶栏图标按钮：控制台显隐 / 关闭服务，与 gh-link 同款几何。 */
+/* 顶栏图标按钮：关闭服务，与 .theme-btn 同款几何。 */
 .hdr-icon-btn{display:inline-flex;align-items:center;justify-content:center;
   width:34px;height:32px;border-radius:8px;border:1px solid var(--line);
   background:var(--panel);color:var(--dim);box-shadow:var(--shadow-sm);
@@ -677,15 +676,14 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
 @media (max-width: 640px){
   header{padding:10px 12px;gap:8px}
   /* 让 header-left / header-right 的子项直接参与 header 的 flex 排布：标题、
-     GitHub、语言、主题四个都待在顶部同一行（order 1-4），顶层页签（order 5）
+     语言、主题都待在顶部同一行（order 1-4），顶层页签（order 5）
      独占下一整行、摆不下横向滚动，状态行（order 6）最后。display:contents 只在
      本断点生效，宽屏 header-left / header-right 的两栏布局不受影响。 */
   .header-left,.header-right{display:contents!important}
   /* 真机上标题文字渲染比桌面模拟更宽：h1 必须可收缩（min-width:0 + 允许省略号），
-     否则它的 min-content 会把 GitHub/语言/主题挤到下一行。 */
+     否则它的 min-content 会把语言/主题挤到下一行。 */
   h1{font-size:15px;flex:1 1 0%;min-width:0;order:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   h1 span{font-size:11px;margin-left:6px}
-  .gh-link{width:36px;height:36px;flex-shrink:0;order:2}
   .lang-btn{flex-shrink:0;order:3}
   .theme-dropdown-wrap{flex-shrink:0;order:4}
   .theme-btn{width:36px;height:36px}
@@ -1379,7 +1377,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     'API 等价花费': 'API-equivalent cost',
     'API 等价': 'API-equivalent',
     'CNY（策略记录的汇率，': 'CNY (rate recorded with the policy,',
-    'GitHub 项目仓库': 'GitHub repository',
     'Key 维度只从本次升级之后开始记录：更早的请求没有这个字段，会一直留在「(切换前)」里且不会再增长。': 'Per-key attribution starts only with this upgrade: earlier requests have no such field, so they stay under (before switch) and never grow.',
     '收起「(切换前)」': 'Collapse "(before switch)"',
     '只影响这张表的显示，不改变任何统计口径：收起后那一行的用量依然计入合计': 'Only changes how this table is drawn, not any accounting: a folded row still counts toward the totals',
@@ -1681,9 +1678,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '将新增': 'Will add',
     '将覆盖': 'Will overwrite',
     '将覆盖同 UID 的现有账号（含其凭证），确定继续？': 'Existing accounts with the same UID, including their credentials, will be overwritten. Continue?',
-    '将该账号的出站身份切换为': 'Switch the outbound identity of this account to',
-    '将把全部账号的出站身份切换为 ': 'Switch the outbound identity of ALL accounts to ',
-    '？（含另一个版本）': '? (including the other version)',
     '把全部账号（含另一个版本）的出站身份切到下一个：WB → VSC → CLI': 'Switch every account (both versions) to the next outbound identity: WB → VSC → CLI',
     '将跳过': 'Will skip',
     '尚未选择文件。': 'No file selected yet.',
@@ -2032,7 +2026,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '条件档位：第': 'Conditional tier: #',
     '条记录': 'records',
     '某账号在某模型上被上游限流（429）时，自动在 WB / VSC / CLI 之间换身分重试，每轮最多 4 次。三条身分走不同的配额通道，开启后 429 会少一些。默认关闭。': 'When an account is rate-limited upstream (429) on a model, retry automatically while switching identity among WB / VSC / CLI, up to 4 times per round. The three identities use different quota channels, so 429s become less frequent. Off by default.',
-    '查看 GitHub 项目仓库': 'View the GitHub repository',
     '查询': 'Check',
     '格式。': 'format.',
     '桌面客户端把 token 加密存储了，需要从正在运行的客户端进程内存里回收静态密钥': 'The desktop client now stores tokens encrypted, so the static key has to be recovered from the memory of a running client process',
@@ -2046,6 +2039,11 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '模型性能指标与用量一览': 'Model performance and usage',
     '模型能力': 'Capabilities',
     '模型限制': 'Model restriction',
+    // 国内版视图下另挂的国际版只读清单（见 renderIntlModelsPanel）
+    '国际版模型清单': 'Global model catalog',
+    '当前视图是国内版，这里同时列出国际版的在售模型，保存与勾选仍以国内版主表为准': 'You are viewing China; the Global catalog is listed here as well. Saving and ticking models still applies to the China table above.',
+    '暂无国际版模型清单': 'No Global catalog available',
+    '正在读取国际版模型清单…': 'Loading the Global catalog…',
     '模式': 'Mode',
     // 「N 次请求」是页头/热力图/模型表的动态拼接串：只有「次」「请求」两个单词条时
     // 会拼成「N callsRequests」，短语条目靠长度降序先命中。
@@ -2623,7 +2621,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "添加": "新增",
     "API Key 不能为空": "API Key 不能為空",
     "API Key 与出口绑定": "API Key 與出口繫結",
-    "GitHub 项目仓库": "GitHub 專案倉庫",
     "Key 维度只从本次升级之后开始记录：更早的请求没有这个字段，会一直留在「(切换前)」里且不会再增长。": "Key 維度只從本次升級之後開始記錄：更早的請求沒有這個欄位，會一直留在「(切換前)」裡且不會再增長。",
     "OpenRouter 价估算：按 OpenRouter 公布的模型价折算，覆盖该账号在所选区间内的请求；按条件定价的模型（输入长度阈值或时段）按每条请求取档；单条请求实际用的策略、三档单价与匹配来源见「最近请求」里那条的悬停提示": "OpenRouter 價估算：按 OpenRouter 公佈的模型價折算，覆蓋該帳號在所選區間內的請求；按條件定價的模型（輸入長度閾值或時段）按每條請求取檔；單條請求實際用的策略、三檔單價與匹配來源見「最近請求」裡那條的懸停提示",
     "OpenRouter 价估算：按该行（模型·区域·账号）的 token 消耗折算；按条件定价的模型（输入长度阈值或时段）按每条请求取档；单条请求实际用的策略、三档单价与匹配来源见「最近请求」里那条的悬停提示": "OpenRouter 價估算：按該行（模型·區域·帳號）的 token 消耗折算；按條件定價的模型（輸入長度閾值或時段）按每條請求取檔；單條請求實際用的策略、三檔單價與匹配來源見「最近請求」裡那條的懸停提示",
@@ -2705,6 +2702,10 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "刷新中...": "重新整理中...",
     "刷新模型清单": "重新整理模型清單",
     "立即从上游 API 重新拉取当前视图版本的模型清单（不走缓存；同一版本 30 秒内只能刷一次）": "立即從上游 API 重新拉取目前檢視版本的模型清單（不走快取；同一版本 30 秒內只能重新整理一次）",
+    "国际版模型清单": "國際版模型清單",
+    "当前视图是国内版，这里同时列出国际版的在售模型，保存与勾选仍以国内版主表为准": "目前檢視是國內版，這裡同時列出國際版的在售模型，儲存與勾選仍以國內版主表為準",
+    "暂无国际版模型清单": "暫無國際版模型清單",
+    "正在读取国际版模型清单…": "正在讀取國際版模型清單…",
     "刷新凭证": "重新整理憑證",
     "刷新失败:": "重新整理失敗:",
     "刷新失败: ": "重新整理失敗: ",
@@ -2768,10 +2769,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "将为每个已启用的国际版账号各建一个网页端会话。 这会真的起一次任务，用于计入官方「每日活跃」；活跃走免费模型（0.00x）。继续？": "將為每個已啟用的國際版帳號各建一個網頁端會話。 這會真的起一次任務，用於計入官方「每日活躍」；活躍預設走免費模型（0.00x）。繼續？",
     "将为每个已启用的国际版账号各建一个网页端会话。\\n\\n这会真的起一次任务，用于计入官方「每日活跃」；活跃走免费模型（0.00x）。继续？": "將為每個已啟用的國際版帳號各建一個網頁端會話。\\n\\n這會真的起一次任務，用於計入官方「每日活躍」；活躍走免費模型（0.00x）。繼續？",
     "将覆盖同 UID 的现有账号（含其凭证），确定继续？": "將覆蓋同 UID 的現有帳號（含其憑證），確定繼續？",
-    "将该账号的出站身份切换为": "將該帳號的出站身份切換為",
-    "将该账号的出站身份切换为 ": "將該帳號的出站身份切換為 ",
-    "将把全部账号的出站身份切换为 ": "將把全部帳號的出站身份切換為 ",
-    "？（含另一个版本）": "？（含另一個版本）",
     "把全部账号（含另一个版本）的出站身份切到下一个：WB → VSC → CLI": "把全部帳號（含另一個版本）的出站身份切到下一個：WB → VSC → CLI",
     "尚未选择文件。": "尚未選擇檔案。",
     "展开查看每个模型当前生效的策略": "展開檢視每個模型目前生效的策略",
@@ -2901,7 +2898,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "本机桌面客户端账号": "本機桌面客戶端帳號",
     "权限不足时可以管理员身份运行网关再试一次。": "權限不足時可以管理員身份執行閘道再試一次。",
     "某账号在某模型上被上游限流（429）时，自动在 WB / VSC / CLI 之间换身分重试，每轮最多 4 次。三条身分走不同的配额通道，开启后 429 会少一些。默认关闭。": "某帳號在某模型上被上游限流（429）時，自動在 WB / VSC / CLI 之間換身分重試，每輪最多 4 次。三條身分走不同的配額通道，開啟後 429 會少一些。預設關閉。",
-    "查看 GitHub 项目仓库": "檢視 GitHub 專案倉庫",
     "桌面客户端把 token 加密存储了，需要从正在运行的客户端进程内存里回收静态密钥": "桌面客戶端把 token 加密儲存了，需要從正在執行的客戶端程序記憶體裡回收靜態金鑰",
     "模型性能指标与用量一览": "模型效能指標與用量一覽",
     "次日 00:00 刷新": "次日 00:00 重新整理",
@@ -3671,18 +3667,8 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         运行日志
       </button>
     </nav>
-    <a class="gh-link" href="https://github.com/ardeyouxipianyi/workbuddy2api-hub" target="_blank" rel="noopener noreferrer"
-       title="查看 GitHub 项目仓库" aria-label="GitHub 项目仓库">
-      <svg viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-      </svg>
-    </a>
-    <!-- 顶栏按钮：眼睛 = 在新窗口打开运行日志；电源 = 关闭网关服务。
+    <!-- 顶栏按钮：电源 = 关闭网关服务；运行日志走顶部「运行日志」页签。
          data-no-i18n：图标按钮，title 固定中文。 -->
-    <button type="button" class="hdr-icon-btn" id="btnConsoleToggle" data-no-i18n onclick="toggleConsoleWindow()"
-            title="在新窗口打开运行日志" aria-label="在新窗口打开运行日志">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    </button>
     <button type="button" class="hdr-icon-btn hdr-icon-danger" id="btnGatewayShutdown" data-no-i18n onclick="shutdownGateway()"
             title="关闭网关服务（进程退出，需重新运行启动脚本）" aria-label="关闭网关服务">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3912,6 +3898,33 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         </thead>
         <tbody></tbody>
       </table>
+    </div>
+    <!-- 国内版视图下顺带列出国际版清单：切到国内版时不用再切回国际版去看另一套
+         模型。只有视图是「国内版」时才显示（国际版视图下面这张就是主表），
+         且只读——不带勾选框，勾选仍是全局一份，只在主表上操作。 -->
+    <div id="modelsIntlPanel" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--dim)">国际版模型清单<em id="modelsIntlCount" style="color:var(--dim);font-weight:500"></em></h3>
+        <span style="font-size:12px;color:var(--dim)">当前视图是国内版，这里同时列出国际版的在售模型，保存与勾选仍以国内版主表为准</span>
+      </div>
+      <div id="modelsIntlSourceLine" style="font-size:12px;color:var(--dim);margin:0 0 12px;min-height:16px"></div>
+      <div style="overflow-x:auto">
+        <table id="modelsTableIntl" class="data-cards">
+          <thead>
+            <tr>
+              <th style="text-align:left;width:19%">模型 ID</th>
+              <th style="text-align:left;width:11%">名称</th>
+              <th style="text-align:center;width:12%">消费倍率 / 优惠</th>
+              <th style="text-align:center;width:14%">模型能力</th>
+              <th style="text-align:center;width:9%">上下文窗口</th>
+              <th style="text-align:center;width:9%">最大输出</th>
+              <th style="text-align:left;width:15%">思考档位</th>
+              <th style="text-align:left;width:11%;white-space:nowrap">默认采样参数</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -4487,7 +4500,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--dim)">窗口最高高度（像素，0 = 不限）</span>
-        <input id="setWinMaxHeight" type="number" min="0" max="4000" step="20" value="640"
+        <input id="setWinMaxHeight" type="number" min="0" max="4000" step="20" value="880"
                style="width:110px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--fg);font:inherit">
         <button class="sec" onclick="saveWinMaxHeight(this)">保存</button>
       </div>
@@ -5395,7 +5408,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         </div>
         <div id="logTerminalStatus" style="font-size:11px;color:var(--terminal-dim);font-family:monospace">就绪</div>
       </div>
-      <div id="logTerminalBody" style="height:620px;overflow-y:auto;padding:10px 12px;background:var(--terminal-bg);color:var(--terminal-fg)" onscroll="handleLogTerminalScroll()">
+      <div id="logTerminalBody" style="height:860px;overflow-y:auto;padding:10px 12px;background:var(--terminal-bg);color:var(--terminal-fg)" onscroll="handleLogTerminalScroll()">
         <div class="log-empty">正在拉取网关日志...</div>
       </div>
     </div>
@@ -5987,6 +6000,8 @@ async function loadModels(){
   }catch(e){
     console.error('loadModels error:', e);
   }
+  // 国内版视图下顺带拉国际版那份（不 await，不挡主表；失败只影响下面那栏）。
+  loadIntlModels();
 }
 
 /* ---- 「网关模型清单」勾选（一键配置用，全局一份） ----
@@ -6184,8 +6199,8 @@ function fmtCatalogStamp(sec){
     + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
 }
 
-function renderModelsSourceLine(meta){
-  const el = document.getElementById('modelsSourceLine');
+function renderModelsSourceLine(meta, elId){
+  const el = document.getElementById(elId || 'modelsSourceLine');
   if(!el) return;
   const tip = '清单构建顺序：先请求上游 API（/v3/config，用当前视图版本的账号）→ 失败则读取本机桌面客户端缓存文件 → 都拿不到才用内置快照。'
     + '清单在 5 分钟缓存期内复用，过期自动重取；网关后台每天也会兜底获取一次；点「刷新模型清单」可立即从上游更新。';
@@ -6223,15 +6238,11 @@ function renderModelsSourceLine(meta){
     + ' · 建议点击「刷新模型清单」获取最新数据</span>';
 }
 
-function renderAvailableModels(){
-  const tb = document.querySelector('#modelsTable tbody');
-  if(!tb) return;
-  updateAvailModelCount();
-  if(!MODELS_DATA.length){
-    tb.innerHTML = '<tr><td colspan="8" class="empty">暂无可用模型</td></tr>';
-    return;
-  }
-  tb.innerHTML = MODELS_DATA.map(m => {
+/* 一行模型。主表（#modelsTable）与国际版那份只读清单（#modelsTableIntl）共用
+   这套单元格，区别只有两处：realm 决定「夜间 0.5x」注记挂在哪一版上（国际版
+   清单是在国内版视图下画的，不能按 VIEW_REALM 判断），withPick 决定模型 ID 前
+   有没有「一键配置」勾选框——勾选全局一份，只在主表上操作。 */
+function modelRowHtml(m, realm, withPick){
     // 1. 倍率与折扣 —— 一律以 /v1/models 取回的 credits 为准（活目录优先、
     //    内置快照兜底）。以前这里还按模型 id 写死了 hy3 / hy4-preview-f /
     //    国际版 deepseek-v4.1-flash 三个"限时免费"，与 credits 值是 OR 关系，
@@ -6245,7 +6256,7 @@ function renderAvailableModels(){
     } else if(credText){
       // 统一成倍率写法：'x0.79' / '0.79' / 数字 0.5 都显示成 '0.79x' / '0.5x'。
       const raw = credText.replace(/^x/i, '') + 'x';
-      const night = ((m.id === 'glm-5.2' || m.id === 'deepseek-v4-pro') && window.VIEW_REALM === 'cn')
+      const night = ((m.id === 'glm-5.2' || m.id === 'deepseek-v4-pro') && realm === 'cn')
         ? ' <span style="font-size:10px;color:var(--accent)">(夜间0.5x)</span>' : '';
       credBadge = '<span class="badge s">' + esc(raw) + night + '</span>';
     }
@@ -6365,12 +6376,19 @@ function renderAvailableModels(){
     // 8. 模型 ID 前的「一键配置」复选框：勾上才会被写进 DSH 等客户端的模型
     //    清单（选择全局一份，见 AGENT_MODEL_SELECTION）。服务端还没存过勾选时
     //    isModelPicked() 一律返回 true——默认全部勾选，首屏不必等 GET 回来。
-    const picked = isModelPicked(m.id);
+    //    只读清单（国际版那栏）没有勾选框，ID 单元格就是裸的 id。
+    let idCell;
+    if(withPick){
+      const picked = isModelPicked(m.id);
+      idCell = '<td style="text-align:left" class="mono model-id-cell" data-label="模型 ID" title="' + esc(m.id) + '">'
+        + '<label><input type="checkbox" class="model-pick" data-model-id="' + esc(m.id) + '"'
+        + (picked ? ' checked' : '')
+        + ' title="勾选后该模型才会写入 DSH 等客户端的一键配置"><b>' + esc(m.id) + '</b></label></td>';
+    }else{
+      idCell = '<td style="text-align:left" class="mono" data-label="模型 ID" title="' + esc(m.id) + '"><b>' + esc(m.id) + '</b></td>';
+    }
     return '<tr>'
-      + '<td style="text-align:left" class="mono model-id-cell" data-label="模型 ID" title="' + esc(m.id) + '">'
-      + '<label><input type="checkbox" class="model-pick" data-model-id="' + esc(m.id) + '"'
-      + (picked ? ' checked' : '')
-      + ' title="勾选后该模型才会写入 DSH 等客户端的一键配置"><b>' + esc(m.id) + '</b></label></td>'
+      + idCell
       + nameCell
       + '<td style="text-align:center" class="rate-cell" data-label="消费倍率">' + credBadge + '</td>'
       + '<td style="text-align:center" data-label="能力">' + capHtml + '</td>'
@@ -6379,8 +6397,69 @@ function renderAvailableModels(){
       + '<td style="text-align:left" data-label="思考档位">' + effort + '</td>'
       + sampleCell
       + '</tr>';
-  }).join('');
+}
+
+function renderAvailableModels(){
+  const tb = document.querySelector('#modelsTable tbody');
+  if(!tb) return;
+  updateAvailModelCount();
+  if(!MODELS_DATA.length){
+    tb.innerHTML = '<tr><td colspan="8" class="empty">暂无可用模型</td></tr>';
+  } else {
+    const realm = window.VIEW_REALM === 'cn' ? 'cn' : 'intl';
+    tb.innerHTML = MODELS_DATA.map(m => modelRowHtml(m, realm, true)).join('');
+  }
   applyTableSort('modelsTable');
+  renderIntlModelsPanel();
+}
+
+/* 国内版视图下的国际版清单：只读、无勾选，因为它的用途是「不切视图也能看到
+   另一版有哪些模型」，不是第二份配置入口。国际版视图下这张表就是主表，这里
+   整个收起，免得同一份清单画两遍。数据每轮 loadModels() 随主表一起取，
+   失败就保留上一次的内容——主表能看，这份也没有跟着变空的道理。 */
+let INTL_MODELS_DATA = [];
+let INTL_MODELS_CATALOG = null;
+let INTL_MODELS_LOADING = false;
+
+function renderIntlModelsPanel(){
+  const panel = document.getElementById('modelsIntlPanel');
+  if(!panel) return;
+  const show = window.VIEW_REALM === 'cn';
+  panel.style.display = show ? 'block' : 'none';
+  if(!show) return;
+  const count = document.getElementById('modelsIntlCount');
+  if(count) count.textContent = INTL_MODELS_DATA.length ? '（共 ' + INTL_MODELS_DATA.length + ' 个）' : '';
+  // 来源横幅只在真有清单时才画：第一轮还没取回来时挂一个「来源未知」的黄条，
+  // 下一秒又换成正常的，看着像刚刚出了故障。
+  const srcEl = document.getElementById('modelsIntlSourceLine');
+  if(srcEl && !INTL_MODELS_DATA.length) srcEl.innerHTML = '';
+  else renderModelsSourceLine(INTL_MODELS_CATALOG, 'modelsIntlSourceLine');
+  const tb = panel.querySelector('#modelsTableIntl tbody');
+  if(!tb) return;
+  if(!INTL_MODELS_DATA.length){
+    const msg = INTL_MODELS_LOADING ? '正在读取国际版模型清单…' : '暂无国际版模型清单';
+    tb.innerHTML = '<tr><td colspan="8" class="empty">' + msg + '</td></tr>';
+    return;
+  }
+  tb.innerHTML = INTL_MODELS_DATA.map(m => modelRowHtml(m, 'intl', false)).join('');
+  applyTableSort('modelsTableIntl');
+}
+
+async function loadIntlModels(){
+  // 国际版视图下不需要这份：主表画的就是它。
+  if(window.VIEW_REALM !== 'cn') return;
+  INTL_MODELS_LOADING = true;
+  renderIntlModelsPanel();
+  try{
+    const r = await getJSON('/v1/models?realm=intl');
+    INTL_MODELS_DATA = r.data || [];
+    INTL_MODELS_CATALOG = r.catalog || null;
+  }catch(e){
+    console.error('loadIntlModels error:', e);
+  }finally{
+    INTL_MODELS_LOADING = false;
+    renderIntlModelsPanel();
+  }
 }
 
 let CURRENT_GROWTH_UID = 'all';
@@ -6904,6 +6983,9 @@ const SORT_DENY_TABLES = new Set(['recent', 'desktopScanBody', 'creditsModalCont
    （下拉框、按钮、拼给人看的标签串）。 */
 const SORT_COL_KINDS = {
   modelsTable:      ['text', 'text', 'num', 'text', 'num', 'num', 'text', 'text'],
+  // 国内版视图下另挂的国际版只读清单：列序与主表一致，只是没有勾选框（ID 列
+  // 照常按文本排）。
+  modelsTableIntl:  ['text', 'text', 'num', 'text', 'num', 'num', 'text', 'text'],
   growthTable:      ['text', 'text', 'num', 'num', 'text'],
   // 时间列是 ISO 串，字典序就是时间序，不必另给排序值。
   creditHistoryTable: ['text', 'text', 'text', 'num', 'num'],
@@ -7441,19 +7523,11 @@ const GETJSON_INFLIGHT = new Map();
 // 挂死保护：网络层僵住时 fetch 可能永远不落定，登记项会一直占着这个 URL，之后
 // 每一轮轮询都陪它一起等。超过这个时长就把登记项视为已死，放行新请求。
 const GETJSON_STALE_MS = 60000;
-// ---- 顶栏：运行日志窗口 + 关闭服务 ------------------------------------
-// 「眼睛」按钮在新窗口打开运行日志页：服务端不 spawn 任何进程，Windows /
-// macOS / 容器走同一条路（#427）。关闭服务不能凭一次 postJSON 的成败就宣布
-// 成功——容器或守护进程可能把进程重新拉起，所以要用 /health 复核（#426）。
+// ---- 顶栏：关闭服务 ---------------------------------------------------
+// 运行日志走顶部「运行日志」页签，顶栏不再单独开窗口。关闭服务不能凭一次
+// postJSON 的成败就宣布成功——容器或守护进程可能把进程重新拉起，所以要用
+// /health 复核（#426）。
 let GATEWAY_DOWN = false;
-
-function toggleConsoleWindow(){
-  let win = null;
-  try{ win = window.open('/dashboard?tab=logs', 'wb-logs', 'width=1000,height=640'); }catch(e){}
-  if(!win){ toast('浏览器拦截了新窗口，请允许弹窗后重试', 'bad'); return; }
-  try{ win.focus(); }catch(e){}
-  toast('已在新窗口打开运行日志', 'ok');
-}
 
 async function shutdownGateway(opts){
   if(!confirm('确定关闭网关服务？进程会退出，需要重新运行启动脚本才能再次使用。')) return;
@@ -7487,8 +7561,6 @@ async function shutdownGateway(opts){
   toast('网关服务已关闭，需重新运行启动脚本才能恢复', 'warn');
   const dot = document.getElementById('statusDot');
   if(dot) dot.style.background = 'var(--bad)';
-  const t = document.getElementById('btnConsoleToggle');
-  if(t) t.disabled = true;
   const s = document.getElementById('btnGatewayShutdown');
   if(s) s.disabled = true;
 }
@@ -8363,13 +8435,15 @@ function renderActivityBoard(data){
     + '<th style="text-align:center;width:76px">结果</th>'
     + '<th style="text-align:left">说明</th>'
     + '</tr></thead><tbody>'
+    // 文本列的表头在这张表里显式写了 text-align:left，单元格必须跟着走：
+    // th,td 的全局默认是右对齐，不给 td 同款内联样式，表头和数据就会错开。
     + rows.map(r => '<tr>'
-        + '<td class="mono" data-label="时间">' + esc(activityTime(r.ts)) + '</td>'
-        + '<td data-label="账号" title="' + esc(r.uid || '') + '">'
+        + '<td class="mono" style="text-align:left" data-label="时间">' + esc(activityTime(r.ts)) + '</td>'
+        + '<td style="text-align:left" data-label="账号" title="' + esc(r.uid || '') + '">'
           + '<span data-no-i18n>' + esc(activityWho(r)) + '</span></td>'
         + '<td style="text-align:center" data-label="区域">'
           + esc(ACTIVITY_REALM_LABEL[r.realm] || '—') + '</td>'
-        + '<td data-label="任务">' + esc(ACTIVITY_TASK_LABEL[r.task] || r.task || '—') + '</td>'
+        + '<td style="text-align:left" data-label="任务">' + esc(ACTIVITY_TASK_LABEL[r.task] || r.task || '—') + '</td>'
         + '<td style="text-align:center" data-label="来源">'
           + esc(ACTIVITY_TRIGGER_LABEL[r.trigger] || r.trigger || '—') + '</td>'
         + '<td style="text-align:center" data-label="结果">' + resultBadge(r.ok) + '</td>'
@@ -8645,13 +8719,13 @@ async function editAccountDisabledModels(uid){
   document.body.appendChild(mask);
 }
 async function setAccountProduct(uid, prod, btn){
+  // 点击即切，不再弹确认：身分可随时再点回来，确认框只会多一次点击。
   const names = {
     'workbuddy': 'WorkBuddy 独立桌面客户端 (WB)',
     'vscode': '官方 VSCode 插件 (VSC)',
     'cli': '官方 CodeBuddy CLI (CLI)'
   };
   const label = names[prod] || prod;
-  if(!confirm('将该账号的出站身份切换为 ' + label + '？\n\n不同身分对应不同的出站指纹、端点和配额通道。')) return;
   if(btn){ btn.disabled = true; }
   try {
     const r = await postJSON('/accounts/product', {uid: uid, product: prod});
@@ -8689,7 +8763,6 @@ async function cycleAllProducts(btn){
   // cur 为 null（各账号身分不一致）时落到第一项，等于「统一成 WB」。
   const next = PRODUCT_ORDER[(PRODUCT_ORDER.indexOf(cur) + 1) % PRODUCT_ORDER.length];
   const label = PRODUCT_SHORT[next];
-  if(!confirm('将把全部账号的出站身份切换为 ' + label + '？（含另一个版本）')) return;
   if(btn) btn.disabled = true;
   try{
     await postJSON('/accounts/product', {product: next});
@@ -10932,12 +11005,12 @@ async function loadSettings(showToast){
     const separateInput = document.getElementById('setAccountsSeparate');
     if(separateInput) separateInput.checked = separateTab;
 
-    // 面板窗口限高：字段缺失（后端旧一点）或存坏了都按默认 640px 算，0 = 不限。
+    // 面板窗口限高：字段缺失（后端旧一点）或存坏了都按默认 880px 算，0 = 不限。
     // 坏值回落默认状态这条口径与「顶部页签显示」「账号区折叠」一致，见
     // wb_settings.section_max_height 与 applyWinMaxHeight。
     const rawWinMax = data.section_max_height;
     const winMax = (typeof rawWinMax === 'number' && Number.isFinite(rawWinMax) && rawWinMax >= 0)
-      ? rawWinMax : 640;
+      ? rawWinMax : 880;
     applyWinMaxHeight(winMax);
     const winMaxInput = document.getElementById('setWinMaxHeight');
     if(winMaxInput) winMaxInput.value = String(Math.round(winMax));

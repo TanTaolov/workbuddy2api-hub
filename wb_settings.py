@@ -43,10 +43,10 @@ CREDITS_REFRESH_HOURS_KEY = "credits_refresh_hours"
 # Panel window height cap, in pixels: a dashboard window (section) taller than
 # this scrolls internally with its title row pinned, instead of stretching the
 # whole page. 0 turns the cap off. The default sits just above the log
-# terminal's own 620px so the terminal stays untouched until the user asks for
+# terminal's own 860px so the terminal stays untouched until the user asks for
 # something smaller.
 SECTION_MAX_HEIGHT_KEY = "section_max_height"
-DEFAULT_SECTION_MAX_HEIGHT = 640
+DEFAULT_SECTION_MAX_HEIGHT = 880
 MAX_SECTION_MAX_HEIGHT = 4000
 # Whether a model name may inherit its price from a suffix-stripped base
 # (deepseek-r1-0528-lkeap → deepseek-r1-0528). Missing key reads as on.
