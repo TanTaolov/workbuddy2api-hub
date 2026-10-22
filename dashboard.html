@@ -1359,7 +1359,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '(连续': '(streak',
     '(选填，留空 = 不限制)': '(optional, empty = no limit)',
     '+ 添加 API Key': '+ Add API Key',
-    '+ 添加槽位': '+ Add slot',
+    '+ 添加代理': '+ Add proxy',
     '+ 添加账号 (OAuth)': '+ Add account (OAuth)',
     '「设置」是页面显示开关自己的入口，收起来就放不回去了，固定保留。': 'Settings is where this switch lives, so it cannot be unticked - there would be no way back.',
     '取消勾选就把该页签从顶部收起来，勾回来即恢复；清单按顶部现有的页签现场生成，上游增删页面这里自动跟上；偏好存在本网关，换浏览器、重启服务都记得。「设置」是这一页自己的入口，固定保留。': 'Unticking a tab takes it out of the top bar; tick it again to bring it back. The list is built from the tabs the panel actually has, so a page added or removed upstream shows up here on its own. The choice is stored on this gateway, so it survives a different browser and a restart. Settings stays: it is where this switch lives.',
@@ -1405,7 +1405,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '⇄ 切换默认出口为【国内版】': '⇄ Switch the default exit to China',
     '。名字带渠道后缀（如': '. Names carrying a channel suffix (such as',
     '。没人引用、又已经不作数的策略会被清掉（每个模型至少留一条，刚取到的那批不动）。取价间隔以': '. Policies nobody references and that are no longer valid get cleaned up (every model keeps at least one, and the batch just fetched is left alone). The fetch interval is counted in',
-    '「绑定账号」只统计已启用账号；停用账号会自动释放槽位，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。': 'Bound accounts counts enabled accounts only; disabling an account releases its slot automatically and you must bind it again after re-enabling. Adjust the binding in the Exit dropdown of the account table on the gateway page. With an empty name the slot shows Country Type from the exit; clicking Test fills in the exit info and names the slot accordingly.',
+    '「绑定账号」只统计已启用账号；停用账号会自动释放代理，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。': 'Bound accounts counts enabled accounts only; disabling an account releases its proxy automatically and you must bind it again after re-enabling. Adjust the binding in the Exit dropdown of the account table on the gateway page. With an empty name the proxy shows Country Type from the exit; clicking Test fills in the exit info and names the proxy accordingly.',
     '一键做任务领积分': 'Run all tasks and claim credits',
     '上一页': 'Previous',
     '上下文': 'Context',
@@ -1434,7 +1434,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '个停用': 'disabled',
     '个可用出口': 'reachable exits',
     '个未绑定账号分配代理出口': 'unbound accounts assigned a proxy exit',
-    '个槽位，记得点「保存槽位」': 'slots, remember to click Save slots',
+    '个代理，记得点「保存代理」': 'proxies, remember to click Save proxies',
     '个模型 ·': 'models ·',
     '个模型）': 'models)',
     '个生效)': 'active)',
@@ -1460,8 +1460,10 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '今日请求数': 'Requests today',
     '今日领取:': 'Claimed today:',
     '付费用户': 'Paid user',
+    '代理': 'Proxies',
     '代理地址': 'Proxy address',
     '代理列表': 'Proxy list',
+    '反向代理': 'Reverse proxy',
     '任务': 'Task',
     '任务名称 / 代码': 'Task name / code',
     '任务执行中...': 'Running tasks...',
@@ -1473,7 +1475,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '住宅': 'Residential',
     '保存': 'Save',
     '保存失败:': 'Save failed:',
-    '保存槽位': 'Save slots',
+    '保存代理': 'Save proxies',
     '保留积分': 'Reserved credits',
     '修改失败:': 'Update failed:',
     '修改密码': 'Change password',
@@ -1569,7 +1571,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '剩余额度最大': 'Most quota left',
     '加载中...': 'Loading...',
     '加载更多': 'Load more',
-    '勾选要导入为槽位的出口：': 'Tick the exits to import as slots:',
+    '勾选要导入为代理的出口：': 'Tick the exits to import as proxies:',
     '匹配来源：': 'Match source:',
     '区域': 'Region',
     '区间': 'range',
@@ -2026,7 +2028,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '桌面客户端把 token 加密存储了，需要从正在运行的客户端进程内存里回收静态密钥': 'The desktop client now stores tokens encrypted, so the static key has to be recovered from the memory of a running client process',
     '档': 'tier',
     '检测到加密凭据': 'Encrypted credentials detected',
-    '槽位还没有填写代理地址': 'The slot has no proxy address yet',
+    '代理还没有填写地址': 'The proxy has no address yet',
     '模型': 'Model',
     '模型 ID': 'Model ID',
     '模型价格估算': 'Model price estimate',
@@ -2214,7 +2216,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '网关日志已清空': 'Gateway logs cleared',
     '网关每隔这段时间去 OpenRouter 取一次价：每个模型每份不同的价格存成一条': 'The gateway fetches prices from OpenRouter every so often: each distinct price set of a model is stored as one',
     '网关设置': 'Gateway settings',
-    '面板密码与界面语言、代理槽与限额、价格估算、出站身份与本地网络工具。': 'Panel password and UI language, quotas, price estimation, outbound identity and local web tools.',
+    '面板密码与界面语言、限额配置、价格估算、出站身份与本地网络工具。': 'Panel password and UI language, quotas, price estimation, outbound identity and local web tools.',
     '估算价格': 'Estimated cost',
     '估算价格（国内版）': 'Estimated cost (China)',
     '估算价格（国际版）': 'Estimated cost (Global)',
@@ -2309,7 +2311,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '设置已刷新': 'Settings refreshed',
     '设置文件': 'Settings file',
     '设置里还没有任何 API Key，全部流量都落在下面的未归属行里。': 'No API key is configured yet, so all traffic lands in the unattributed row below.',
-    '该槽位被': 'This slot is used by',
+    '该代理被': 'This proxy is used by',
     '该模型今日已达限额，仅此模型受限（本地 0 点恢复）': 'This model reached the daily limit; only this model is restricted (resets at local midnight)',
     '该模型暂无定价数据': 'No pricing data for this model yet',
     '该模型被上游临时限流（429），仅此模型受限，到点自动恢复': 'This model is temporarily rate-limited upstream (429); only this model is restricted and it recovers automatically',
@@ -2577,7 +2579,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "点击编辑该账号禁用的模型（逗号分隔；留空 = 不限制）":
       "點擊編輯該帳號停用的模型（逗號分隔；留空 = 不限制）",
     " 个未绑定账号分配代理出口": " 個未繫結帳號分配代理出口",
-    " 个槽位，记得点「保存槽位」": " 個槽位，記得點「儲存槽位」",
+    " 个代理，记得点「保存代理」": " 個代理，記得點「儲存代理」",
     " 个账号 → ": " 個帳號 → ",
     " 个账号)": " 個帳號)",
     " 个账号的积分": " 個帳號的積分",
@@ -2608,7 +2610,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "(每账号每天": "(每帳號每天",
     "(每账号每模型每天": "(每帳號每模型每天",
     "+ 添加 API Key": "+ 新增 API Key",
-    "+ 添加槽位": "+ 新增槽位",
+    "+ 添加代理": "+ 新增代理",
     "+ 添加账号 (OAuth)": "+ 新增帳號 (OAuth)",
     "「设置」是页面显示开关自己的入口，收起来就放不回去了，固定保留。": "「設定」是頁面顯示開關自己的入口，收起來就放不回去了，固定保留。",
     "取消勾选就把该页签从顶部收起来，勾回来即恢复；清单按顶部现有的页签现场生成，上游增删页面这里自动跟上；偏好存在本网关，换浏览器、重启服务都记得。「设置」是这一页自己的入口，固定保留。": "取消勾選就把該頁籤從頂部收起來，勾回來即恢復；清單按頂部現有的頁籤現場生成，上游增刪頁面這裡自動跟上；偏好存在本閘道，換瀏覽器、重啟服務都記得。「設定」是這一頁自己的入口，固定保留。",
@@ -2628,7 +2630,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "⇄ 切换默认出口为【国内版】": "⇄ 切換預設出口為【國內版】",
     "。名字带渠道后缀（如": "。名字帶渠道字尾（如",
     "「上游限流」到点自动恢复；「本地停用」需手动启用；「日限额」次日零点恢复": "「上游限流」到點自動恢復；「本地停用」需手動啟用；「日限額」次日零點恢復",
-    "「绑定账号」只统计已启用账号；停用账号会自动释放槽位，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。": "「繫結帳號」只統計已啟用帳號；停用帳號會自動釋放槽位，重新啟用後需重新繫結。在閘道頁帳號表的「出口」下拉中調整繫結。名稱留空時按出口自動顯示「國家 型別」，點「測試」會補全出口資訊並據此命名。",
+    "「绑定账号」只统计已启用账号；停用账号会自动释放代理，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。": "「繫結帳號」只統計已啟用帳號；停用帳號會自動釋放代理，重新啟用後需重新繫結。在閘道頁帳號表的「出口」下拉中調整繫結。名稱留空時按出口自動顯示「國家 型別」，點「測試」會補全出口資訊並據此命名。",
     "」的全局默认请填 0 或正整数": "」的全域性預設請填 0 或正整數",
     "一键刷新凭证": "一鍵重新整理憑證",
     "上下文窗口": "上下文視窗",
@@ -2642,7 +2644,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "下面是本机桌面客户端里已登录的账号（只读检测，点击「导入」才会加入网关）。 国际版账号归入国际版列表，国内版账号归入国内版列表。": "下面是本機桌面客戶端裡已登入的帳號（只讀檢測，點選「匯入」才會加入閘道）。 國際版帳號歸入國際版列表，國內版帳號歸入國內版列表。",
     "与' + rangeLabel() + '相同：所选范围已覆盖日志中的全部请求": "與' + rangeLabel() + '相同：所選範圍已覆蓋日誌中的全部請求",
     "个未绑定账号分配代理出口": "個未繫結帳號分配代理出口",
-    "个槽位，记得点「保存槽位」": "個槽位，記得點「儲存槽位」",
+    "个代理，记得点「保存代理」": "個代理，記得點「儲存代理」",
     "个账号 →": "個帳號 →",
     "个账号)": "個帳號)",
     "个账号的积分": "個帳號的積分",
@@ -2662,7 +2664,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "保存": "儲存",
     "保存失败:": "儲存失敗:",
     "保存失败: ": "儲存失敗: ",
-    "保存槽位": "儲存槽位",
+    "保存代理": "儲存代理",
     "保存限额": "儲存限額",
     "全局 ": "全域性 ",
     "全局默认": "全域性預設",
@@ -2713,7 +2715,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "刷新间隔（分钟）": "重新整理間隔（分鐘）",
     "剥掉的后缀：": "剝掉的字尾：",
     "加载中...": "載入中...",
-    "勾选要导入为槽位的出口：": "勾選要匯入為槽位的出口：",
+    "勾选要导入为代理的出口：": "勾選要匯入為代理的出口：",
     "取价输入 = 内置目录": "取價輸入 = 內建目錄",
     "变体后缀继承": "變體字尾繼承",
     "可用账号池": "可用帳號池",
@@ -2968,7 +2970,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "网关每隔这段时间去 OpenRouter 取一次价：每个模型每份不同的价格存成一条": "閘道每隔這段時間去 OpenRouter 取一次價：每個模型每份不同的價格存成一條",
     "管理账号池与代理出口，查看当日调用量、估算花费、成功率、最近请求与网关模型清单。": "管理帳號池與代理出口，查看當日呼叫量、估算花費、成功率、最近請求與閘道模型清單。",
     "网关设置": "閘道設定",
-    "面板密码与界面语言、代理槽与限额、价格估算、出站身份与本地网络工具。": "面板密碼與介面語言、限額配置、價格估算、出站身份與本地網路工具。",
+    "面板密码与界面语言、限额配置、价格估算、出站身份与本地网络工具。": "面板密碼與介面語言、限額配置、價格估算、出站身份與本地網路工具。",
     "网关调用量": "閘道呼叫量",
     "网关运行日志": "閘道執行日誌",
     "网关默认上游已切换并永久保存为:": "閘道預設上游已切換並永久儲存為:",
@@ -3652,7 +3654,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
         API Key
       </button>
       <button class="main-nav-btn" id="btnNavSlots" onclick="switchMainTab('slots')">
-        代理槽
+        代理
       </button>
       <button class="main-nav-btn" id="btnNavSettings" onclick="switchMainTab('settings')">
         设置
@@ -3671,7 +3673,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     </button>
   </div>
   <div class="header-right">
-    <span class="version-label" data-no-i18n title="网关版本">v1.7.25.1</span>
+    <span class="version-label" data-no-i18n title="网关版本">v1.7.25.2</span>
     <button type="button" class="lang-btn" id="langToggleBtn" onclick="toggleLang(event)" data-no-i18n title="切换语言 (简体中文 / 正體中文 / English)" aria-label="切换语言">
       <span id="langToggleLabel">EN</span>
     </button>
@@ -4010,7 +4012,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     <button class="sec" onclick="testAccounts(this)" title="逐个真发一条最小请求，并同时检查本机到上游的网络：能分清「账号坏了」和「本机断网了」，测试通过还会清掉该账号的熔断/降权计数">一键测试</button>
     </div>
     <div class="tb-group">
-    <button class="sec" onclick="autoAssignSlots()" title="把尚未绑定出口的已启用账号依次分配到已启用的代理槽；已有绑定的账号不受影响">一键分配代理</button>
+    <button class="sec" onclick="autoAssignSlots()" title="把尚未绑定出口的已启用账号依次分配到已启用的代理；已有绑定的账号不受影响">一键分配代理</button>
     <button class="sec" id="btnProductAll" onclick="cycleAllProducts(this)" title="把全部账号（含另一个版本）的出站身份切到下一个：WB → VSC → CLI">一键切换所有出站身份：<span id="productAllLabel">WB</span></button>
     <button class="sec" onclick="setAll(true, this)">全部启用</button>
     <button class="sec" onclick="setAll(false, this)">全部停用</button>
@@ -13415,9 +13417,9 @@ async function saveApiKeys(btn){
 let PROXY_SLOTS = [];
 /* 编辑器里有未保存改动时为 true（issue #79）。
  *
- * 刷新槽位是「拉服务端列表 → 整体替换 → 重绘整张表」，而「+ 添加槽位」只是把
+ * 刷新代理是「拉服务端列表 → 整体替换 → 重绘整张表」，而「+ 添加代理」只是把
  * 一行 push 进本地列表、服务端并不知道它存在；loadAccounts() 每 15 秒会顺带
- * 刷新一次槽位，于是刚加的那行（以及改了一半的已有行）会被服务端的旧列表顶掉。
+ * 刷新一次代理，于是刚加的那行（以及改了一半的已有行）会被服务端的旧列表顶掉。
  * 置位期间跳过刷新，保存成功后清零。 */
 let SLOTS_DIRTY = false;
 let SLOT_DISCOVER = [];
@@ -13495,7 +13497,7 @@ const IP_TYPE_LABELS = {residential: '住宅', datacenter: '机房'};
 function ipTypeLabel(t){ return IP_TYPE_LABELS[t] || ''; }
 
 /* 默认名称：国家 + 类型（如「美国 住宅」）。没有国家就不自动命名——只有
-   「住宅」两个字区分不了不同槽位，此时回退显示槽位 id。 */
+   「住宅」两个字区分不了不同代理，此时回退显示代理 id。 */
 function autoSlotName(c){
   const where = String((c && c.country) || '').trim();
   if(!where) return '';
@@ -13558,7 +13560,7 @@ function renderProxySlots(){
         + '</td></tr>'
       ).join('')
     + '</tbody></table></div>'
-    + '<div class="legend"><span>「绑定账号」只统计已启用账号；停用账号会自动释放槽位，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。</span></div>';
+    + '<div class="legend"><span>「绑定账号」只统计已启用账号；停用账号会自动释放代理，重新启用后需重新绑定。在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。</span></div>';
   applyTableSort('slotList');
 }
 
@@ -13572,7 +13574,7 @@ function addProxySlotRow(){
 function removeProxySlot(index){
   const s = PROXY_SLOTS[index];
   if(!s) return;
-  if((s.bound || 0) > 0 && !confirm('该槽位被 ' + s.bound + ' 个账号绑定，删除后它们将回退直连。继续？')) return;
+  if((s.bound || 0) > 0 && !confirm('该代理被 ' + s.bound + ' 个账号绑定，删除后它们将回退直连。继续？')) return;
   SLOTS_DIRTY = true;
   PROXY_SLOTS.splice(index, 1);
   renderProxySlots();
@@ -13596,7 +13598,7 @@ async function saveProxySlots(btn){
 
 async function testProxySlot(index, btn){
   const s = PROXY_SLOTS[index];
-  if(!s || !s.url){ toast('槽位还没有填写代理地址', 'warn'); return; }
+  if(!s || !s.url){ toast('代理还没有填写地址', 'warn'); return; }
   if(btn){ btn.disabled = true; btn.textContent = '测试中...'; }
   try{
     let id = s.id;
@@ -13609,7 +13611,7 @@ async function testProxySlot(index, btn){
     }
     const r = await postJSON('/proxy/slots/test', {id: id});
     if(r.ok){
-      // 服务端已把出口信息写进槽位，这里只把这一行同步过来，不整表重载——
+      // 服务端已把出口信息写进代理，这里只把这一行同步过来，不整表重载——
       // 其他行里还没保存的输入都还在 PROXY_SLOTS 里，重绘不会丢。
       const row = PROXY_SLOTS[index];
       if(row && r.slot){
@@ -13652,7 +13654,7 @@ function renderDiscover(){
   if(!box) return;
   if(!SLOT_DISCOVER.length){ box.innerHTML = ''; return; }
   box.innerHTML = '<div style="margin-top:14px"><div style="font-size:12px;color:var(--dim);margin-bottom:8px">'
-    + '勾选要导入为槽位的出口：</div>'
+    + '勾选要导入为代理的出口：</div>'
     + SLOT_DISCOVER.map((c, i) =>
         '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px">'
         + '<input type="checkbox" ' + (c.reachable ? 'checked' : 'disabled') + ' data-idx="' + i + '">'
@@ -13685,7 +13687,7 @@ function importDiscovered(){
     });
   });
   renderProxySlots();
-  toast('已加入 ' + picked.length + ' 个槽位，记得点「保存槽位」', 'ok');
+  toast('已加入 ' + picked.length + ' 个代理，记得点「保存代理」', 'ok');
 }
 
 async function autoAssignSlots(){

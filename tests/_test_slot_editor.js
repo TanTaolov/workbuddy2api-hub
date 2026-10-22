@@ -2,7 +2,7 @@
  *
  * loadAccounts() runs every 15 seconds and used to refresh the slot list with
  * it. That refresh replaces the whole list and re-renders the table, so a row
- * the operator had just added with 「+ 添加槽位」 - not saved to the server yet -
+ * the operator had just added with 「+ 添加代理」 - not saved to the server yet -
  * was wiped before they could type anything into it. The editor now refuses to
  * be refreshed while it holds unsaved changes, and says so in its header.
  *
