@@ -609,21 +609,6 @@ button.page-nav-top{display:flex;align-items:center;justify-content:center;gap:6
   transition:all .15s ease}
 button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);color:var(--accent)}
 .page-sidebar-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.page-sidebar-toggle{appearance:none;flex:0 0 auto;width:22px;height:22px;padding:0;
-  display:inline-flex;align-items:center;justify-content:center;border-radius:6px;
-  border:1px solid var(--line);background:var(--panel2);color:var(--dim);
-  font:inherit;font-size:12px;line-height:1;cursor:pointer;transition:all .15s ease}
-.page-sidebar-toggle:hover{color:var(--fg);border-color:var(--line-hover)}
-/* 收起侧栏：整列压成一条细轨，只留展开按钮，把宽度让给内容区。窄屏下导航
-   本来就是一条横栏，没有可收的余地，所以这套样式只在宽屏生效。 */
-@media (min-width:861px){
-  .main-page.page-nav-on.page-nav-collapsed.active{grid-template-columns:44px minmax(0,1fr);gap:12px}
-  .main-page.page-nav-on.page-nav-collapsed > .page-sidebar{padding:6px 4px;overflow:hidden}
-  .main-page.page-nav-on.page-nav-collapsed .page-sidebar-title,
-  .main-page.page-nav-on.page-nav-collapsed .page-nav,
-  .main-page.page-nav-on.page-nav-collapsed button.page-nav-top{display:none}
-  .main-page.page-nav-on.page-nav-collapsed .page-sidebar-head{justify-content:center;padding:0}
-}
 .main-page.page-nav-on section{scroll-margin-top:var(--page-nav-top,84px)}
 /* 点击导航后短暂描边，明确「跳到这里了」 */
 .main-page.page-nav-on section.page-nav-flash{outline:2px solid var(--accent);outline-offset:2px}
@@ -1443,8 +1428,8 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '个 Key 生效': 'keys active',
     '个)': ')',
     '个·共': '· total',
-    '个代理槽': 'proxy slots',
-    '代理槽': 'Proxy slots',
+    '个代理': 'proxies',
+    'IP代理': 'IP Proxy',
     '个保留积分': 'reserved credits',
     '个停用': 'disabled',
     '个可用出口': 'reachable exits',
@@ -1476,8 +1461,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '今日领取:': 'Claimed today:',
     '付费用户': 'Paid user',
     '代理地址': 'Proxy address',
-    '代理槽': 'Proxy slots',
-    '代理槽列表': 'Slot list',
+    '代理列表': 'Proxy list',
     '任务': 'Task',
     '任务名称 / 代码': 'Task name / code',
     '任务执行中...': 'Running tasks...',
@@ -1696,7 +1680,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '尚未选择文件。': 'No file selected yet.',
     '就绪': 'Ready',
     '就绪 ·': 'Ready ·',
-    '展开本页导航': 'Expand section navigation',
     '展开查看每个模型当前生效的策略': 'Expand to see the policy currently in effect for each model',
     '展开逐条查看 / 手填 OpenRouter id': 'Expand to inspect entry by entry / enter an OpenRouter id by hand',
     '展示当前视图下官方对话大模型、上下文容量、推理/视觉能力、思考控制、默认采样参数及在售倍率': 'Official chat models in the current view, with their context size, reasoning/vision abilities, thinking controls, default sampling parameters and current rate',
@@ -1854,7 +1837,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '批量操作失败:': 'Batch operation failed:',
     '把 Key 没有绑定出口，它的积分由国际版与国内版两套价格相加而来，只能当量级看。': 'keys have no exit bound; their credits add the Global and China price sets together, so treat them as a rough magnitude only.',
     '把)': ')',
-    '把尚未绑定出口的已启用账号依次分配到已启用的代理槽；已有绑定的账号不受影响': 'Assign enabled accounts with no exit to enabled proxy slots in order; accounts that are already bound are left alone',
+    '把尚未绑定出口的已启用账号依次分配到已启用的代理；已有绑定的账号不受影响': 'Assign enabled accounts with no exit to enabled proxies in order; accounts that are already bound are left alone',
     '拉取积分明细失败:': 'Fetching credit details failed:',
     '按 24h 估算': 'est. from last 24h',
     '按 API Key 的消耗归属': 'Usage attributed by API key',
@@ -1871,7 +1854,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '操作失败': 'Operation failed',
     '操作失败:': 'Operation failed:',
     '支持查看各账号的总消耗及调用的每个具体模型细分占比': 'Shows the total usage of each account and the breakdown per model it called',
-    '收起本页导航': 'Collapse section navigation',
     '数据看板': 'Analytics',
     '整点排程': 'Scheduled hourly',
     '文件不是合法 JSON': 'The file is not valid JSON',
@@ -2078,7 +2060,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '正常': 'Healthy',
     '正常可用': 'Available',
     '每 5 秒自动刷新 · 数据来自本机反代': 'Auto-refreshes every 5 seconds · data comes from the local reverse proxy',
-    '每个账号固定绑定一个出口代理槽。槽位地址变化时绑定账号自动跟随；禁用或删除后回退直连。': 'Every account is pinned to one exit proxy slot. When the slot address changes the bound accounts follow automatically; disabling or deleting the slot falls back to a direct connection.',
+    '管理账号的代理出口。每个账号可绑定一个代理，代理地址变化时绑定账号自动跟随；禁用或删除后回退直连。': 'Manage proxy exits for accounts. Each account can be bound to one proxy; when the proxy address changes, bound accounts follow automatically; disabling or deleting the proxy falls back to a direct connection.',
     '每日 Token 限额': 'Daily token limit',
     '每日活跃:': 'Daily activity:',
     '每日活跃打卡 (国际版)': 'Daily activity check-in (Global)',
@@ -2129,7 +2111,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '汇率：1 USD =': 'Rate: 1 USD =',
     '没有勾选任何出口': 'No exits ticked',
     '没有可导入的账号。': 'No accounts to import.',
-    '没有启用的代理槽，请先在「代理槽」添加并保存': 'No proxy slot is enabled; add and save one under Proxy slots first',
+    '没有启用的代理，请先在「IP代理」添加并保存': 'No proxy is enabled; add and save one under IP Proxy first',
     '注意：切换后的身分会被保存，重启后继续沿用，不会自动回到 WB。': 'Note: the switched identity is saved and kept after a restart; it does not go back to WB on its own.',
     '注意：开启后网关会主动出网抓取模型给出的 URL（字面私网地址与解析进内网的域名都会被挡），且每轮代跑都会多跑一次上游、多消耗该账号的额度；某个搜寻引擎被限流时会自动轮换到下一家，全部不可用才把明确错误交给模型。': 'Note: with this on, the gateway goes out to fetch the URLs the model asks for (literal private addresses and hostnames resolving into a private network are both blocked), and every proxied round makes one extra upstream call and spends more of that account quota; when a search backend is rate-limited the gateway rotates to the next one automatically, and only hands the model a clear failure when every backend is unavailable.',
     '活跃打卡成功': 'Activity check-in succeeded',
@@ -2391,7 +2373,6 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '账号 (昵称 / UID)': 'Account (nickname / UID)',
     '账号 Token 自动保活与凭证常驻 (每日 22:00 集中巡检)': 'Automatic account token keep-alive and persistent credentials (batch check daily at 22:00)',
     '账号不存在': 'Account does not exist',
-    '账号代理槽': 'Account proxy slots',
     '账号余额低于该值时不再接单，避免余额被用尽后触发上游的短信提醒。填 0 表示关闭。': 'An account stops taking orders once its balance drops below this, so the balance is never drained enough to trigger the upstream SMS alert. 0 turns it off.',
     '账号凭证刷新成功': 'Account credentials refreshed',
     '账号列表是空的': 'The account list is empty',
@@ -2440,7 +2421,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     '运行日志': 'Logs',
     '返回内容不是 JSON': 'The response is not JSON',
     '还没取过价，暂用出厂快照': 'No price fetched yet; using the factory snapshot for now',
-    '还没有代理槽。点击「自动发现 mihomo 端口」或「+ 添加槽位」。': 'No proxy slot yet. Click Auto-discover mihomo ports or + Add slot.',
+    '还没有代理。点击「自动发现 mihomo 端口」或「+ 添加代理」。': 'No proxy yet. Click Auto-discover mihomo ports or + Add proxy.',
     '还没有请求记录': 'No requests recorded yet',
     '还没有账号': 'No accounts yet',
     '还没有配置 API Key，点击右上角「+ 添加 API Key」创建。': 'No API key configured yet; click + Add API Key in the top right to create one.',
@@ -2870,7 +2851,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "批量操作失败:": "批次操作失敗:",
     "批量操作失败: ": "批次操作失敗: ",
     "把 Key 没有绑定出口，它的积分由国际版与国内版两套价格相加而来，只能当量级看。": "把 Key 沒有繫結出口，它的積分由國際版與國內版兩套價格相加而來，只能當量級看。",
-    "把尚未绑定出口的已启用账号依次分配到已启用的代理槽；已有绑定的账号不受影响": "把尚未繫結出口的已啟用帳號依次分配到已啟用的代理槽；已有繫結的帳號不受影響",
+    "把尚未绑定出口的已启用账号依次分配到已启用的代理；已有绑定的账号不受影响": "把尚未繫結出口的已啟用帳號依次分配到已啟用的代理；已有繫結的帳號不受影響",
     "按 OpenRouter 公布的模型价折算的等价 token 花费": "按 OpenRouter 公佈的模型價折算的等價 token 花費",
     "按当前范围自动选择分钟/小时/天粒度；柱高为总 Token，折线为请求数。": "按目前範圍自動選擇分鐘/小時/天粒度；柱高為總 Token，折線為請求數。",
     "提示词前缀命中复用比": "提示詞字首命中複用比",
@@ -2920,7 +2901,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "正在检测本机桌面客户端账号…": "正在檢測本機桌面客戶端帳號…",
     "正在申请授权登录链接…": "正在申請授權登入連結…",
     "每 5 秒自动刷新 · 数据来自本机反代": "每 5 秒自動重新整理 · 資料來自本機反代",
-    "每个账号固定绑定一个出口代理槽。槽位地址变化时绑定账号自动跟随；禁用或删除后回退直连。": "每個帳號固定繫結一個出口代理槽。槽位地址變化時繫結帳號自動跟隨；禁用或刪除後回退直連。",
+    "管理账号的代理出口。每个账号可绑定一个代理，代理地址变化时绑定账号自动跟随；禁用或删除后回退直连。": "管理帳號的代理出口。每個帳號可繫結一個代理，代理地址變化時繫結帳號自動跟隨；禁用或刪除後回退直連。",
     "每日签到 (国内版)": "每日簽到 (國內版)",
     "Buddy 加油站签到": "Buddy 加油站簽到",
     "本期 Buddy 加油站活动": "本期 Buddy 加油站活動",
@@ -2932,7 +2913,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "每账号每日上限（积分）": "每帳號每日上限（積分）",
     "每账号每模型每日上限（token）": "每帳號每模型每日上限（token）",
     "没有可导入的账号。": "沒有可匯入的帳號。",
-    "没有启用的代理槽，请先在「设置 → 代理槽」添加并保存": "沒有啟用的代理槽，請先在「代理槽」新增並儲存",
+    "没有启用的代理，请先在「IP代理」添加并保存": "沒有啟用的代理，請先在「IP代理」新增並儲存",
     "注意：切换后的身分会被保存，重启后继续沿用，不会自动回到 WB。": "注意：切換後的身分會被儲存，重啟後繼續沿用，不會自動回到 WB。",
     "注意：开启后网关会主动出网抓取模型给出的 URL（字面私网地址与解析进内网的域名都会被挡），且每轮代跑都会多跑一次上游、多消耗该账号的额度；某个搜寻引擎被限流时会自动轮换到下一家，全部不可用才把明确错误交给模型。": "注意：開啟後閘道會主動出網抓取模型給出的 URL（字面私網地址與解析進內網的網域都會被擋），且每輪代跑都會多跑一次上游、多消耗該帳號的額度；某個搜尋引擎被限流時會自動輪換到下一家，全部不可用才把明確錯誤交給模型。",
     "测试通过 (": "測試透過 (",
@@ -3092,7 +3073,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     "运行中 · ": "執行中 · ",
     "运行信息": "執行資訊",
     "运行日志": "執行日誌",
-    "还没有代理槽。点击「自动发现 mihomo 端口」或「+ 添加槽位」。": "還沒有代理槽。點選「自動發現 mihomo 埠」或「+ 新增槽位」。",
+    "还没有代理。点击「自动发现 mihomo 端口」或「+ 添加代理」。": "還沒有代理。點選「自動發現 mihomo 埠」或「+ 新增代理」。",
     "还没有账号": "還沒有帳號",
     "还没有配置 API Key，点击右上角「+ 添加 API Key」创建。": "還沒有配置 API Key，點選右上角「+ 新增 API Key」建立。",
     "连接中断:": "連線中斷:",
@@ -3690,7 +3671,7 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
     </button>
   </div>
   <div class="header-right">
-    <span class="version-label" data-no-i18n title="网关版本">v1.7.25</span>
+    <span class="version-label" data-no-i18n title="网关版本">v1.7.25.1</span>
     <button type="button" class="lang-btn" id="langToggleBtn" onclick="toggleLang(event)" data-no-i18n title="切换语言 (简体中文 / 正體中文 / English)" aria-label="切换语言">
       <span id="langToggleLabel">EN</span>
     </button>
@@ -4466,22 +4447,22 @@ button.page-nav-top:hover{background:var(--panel2);border-color:var(--accent);co
 
   <div id="pageSlots" class="main-page">
     <div style="margin-bottom:16px">
-      <h2 style="margin:0;font-size:17px;color:var(--fg);font-family:var(--serif);font-weight:600;letter-spacing:.02em">账号代理槽</h2>
-      <div style="font-size:12px;color:var(--dim);margin-top:4px">每个账号固定绑定一个出口代理槽。槽位地址变化时绑定账号自动跟随；禁用或删除后回退直连。</div>
+      <h2 style="margin:0;font-size:17px;color:var(--fg);font-family:var(--serif);font-weight:600;letter-spacing:.02em">IP代理</h2>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px">管理账号的代理出口。每个账号可绑定一个代理，代理地址变化时绑定账号自动跟随；禁用或删除后回退直连。</div>
     </div>
 
     <section>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
-          <h2 style="margin:0">代理槽列表 <em id="slotState"></em></h2>
+          <h2 style="margin:0">代理列表 <em id="slotState"></em></h2>
           <div style="font-size:12px;color:var(--dim);margin-top:4px">
             在网关页账号表的「出口」下拉中调整绑定。名称留空时按出口自动显示「国家 类型」，点「测试」会补全出口信息并据此命名。
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="sec" onclick="discoverProxySlots(this)">自动发现 mihomo 端口</button>
-          <button class="sec" onclick="addProxySlotRow()">+ 添加槽位</button>
-          <button onclick="saveProxySlots(this)">保存槽位</button>
+          <button class="sec" onclick="addProxySlotRow()">+ 添加代理</button>
+          <button onclick="saveProxySlots(this)">保存</button>
         </div>
       </div>
       <div id="slotList"></div>
@@ -10111,10 +10092,10 @@ document.addEventListener('DOMContentLoaded', function(){
   initPageNav(document.querySelector('.main-page.active'));
 });
 
-let RECENT_LIMIT_INTL = parseInt(localStorage.getItem('WB_RECENT_LIMIT_INTL') || '20', 10);
-if(![10, 20, 50, 100].includes(RECENT_LIMIT_INTL)) RECENT_LIMIT_INTL = 20;
-let RECENT_LIMIT_CN = parseInt(localStorage.getItem('WB_RECENT_LIMIT_CN') || '20', 10);
-if(![10, 20, 50, 100].includes(RECENT_LIMIT_CN)) RECENT_LIMIT_CN = 20;
+let RECENT_LIMIT_INTL = parseInt(localStorage.getItem('WB_RECENT_LIMIT_INTL') || '10', 10);
+if(![10, 20, 50, 100].includes(RECENT_LIMIT_INTL)) RECENT_LIMIT_INTL = 10;
+let RECENT_LIMIT_CN = parseInt(localStorage.getItem('WB_RECENT_LIMIT_CN') || '10', 10);
+if(![10, 20, 50, 100].includes(RECENT_LIMIT_CN)) RECENT_LIMIT_CN = 10;
 let RECENT_PAGE_INTL = 1;
 let RECENT_PAGE_CN = 1;
 let RECENT_TOTAL_PAGES_INTL = 1;
@@ -10373,8 +10354,6 @@ async function startDashboard(){
    （忽略用于显示状态的 <em>），锚点 id 由标题内容哈希得到。对所有
    .main-page 生效，所以新增页面、增删区块或调整顺序都不需要改这里。 */
 const PAGE_NAV_TOP_VAR = '--page-nav-top';
-/* 侧栏收起状态跨页面、跨刷新共用一份 */
-const PAGE_NAV_COLLAPSE_KEY = 'wb-page-nav-collapsed';
 /* 只有一项的页面不给侧栏：白占一列宽度，也没什么可跳的 */
 const PAGE_NAV_MIN_SECTIONS = 2;
 let pageNavLock = 0;
@@ -10514,30 +10493,6 @@ function onPageNavScroll(){
   pageNavSpy();
 }
 
-function pageNavCollapsedPref(){
-  try { return localStorage.getItem(PAGE_NAV_COLLAPSE_KEY) === '1'; } catch(e){ return false; }
-}
-
-/* 收起与否只体现为页面上的一个类，样式和窄屏回退都由 CSS 决定；按钮的
-   文字/标题跟着状态走，收起后它就是唯一的入口。 */
-function applyPageNavCollapse(page, collapsed){
-  if(!page) return;
-  page.classList.toggle('page-nav-collapsed', !!collapsed);
-  const btn = page.querySelector('.page-sidebar-toggle');
-  if(!btn) return;
-  const label = collapsed ? '展开本页导航' : '收起本页导航';
-  btn.textContent = collapsed ? '»' : '«';
-  btn.title = label;
-  btn.setAttribute('aria-label', label);
-  btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-}
-
-function togglePageNavCollapse(page){
-  const collapsed = !page.classList.contains('page-nav-collapsed');
-  try { localStorage.setItem(PAGE_NAV_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch(e){}
-  applyPageNavCollapse(page, collapsed);
-}
-
 function initPageNav(page){
   if(!page) return;
   syncPageNavOffset();
@@ -10595,13 +10550,7 @@ function initPageNav(page){
   title.className = 'page-sidebar-title';
   title.textContent = '本页导航';
   head.appendChild(title);
-  const collapseBtn = document.createElement('button');
-  collapseBtn.type = 'button';
-  collapseBtn.className = 'page-sidebar-toggle';
-  collapseBtn.addEventListener('click', function(){ togglePageNavCollapse(page); });
-  head.appendChild(collapseBtn);
   sidebar.appendChild(head);
-  applyPageNavCollapse(page, pageNavCollapsedPref());
 
   // 排在区块清单之外：它不是一个区块，不参与高亮与滚动侦测；窄屏下也就能
   // 留在横向胶囊行的左端，不跟着一起滚走。
@@ -13584,7 +13533,7 @@ function renderProxySlots(){
   if(!box) return;
   renderSlotState();
   if(!PROXY_SLOTS.length){
-    box.innerHTML = '<div class="hint" style="color:var(--dim)">还没有代理槽。点击「自动发现 mihomo 端口」或「+ 添加槽位」。</div>';
+    box.innerHTML = '<div class="hint" style="color:var(--dim)">还没有代理。点击「自动发现 mihomo 端口」或「+ 添加代理」。</div>';
     return;
   }
   box.innerHTML = '<div class="table-wrap"><table class="data-cards"><thead><tr>'
@@ -13637,7 +13586,7 @@ async function saveProxySlots(btn){
       SLOTS_DIRTY = false;
       renderProxySlots();
       await loadAccounts();
-      toast('已保存 ' + PROXY_SLOTS.length + ' 个代理槽', 'ok');
+      toast('已保存 ' + PROXY_SLOTS.length + ' 个代理', 'ok');
   }catch(e){
     toast('保存失败: ' + e.message, 'bad');
   }finally{
@@ -13745,7 +13694,7 @@ async function autoAssignSlots(){
   const unbound = (window.ACCOUNTS || []).filter(a => a.enabled && !a.proxySlot);
   if(!unbound.length){ toast('所有已启用账号都已绑定代理出口', 'ok'); return; }
   const slots = PROXY_SLOTS.filter(s => s.enabled !== false);
-  if(!slots.length){ toast('没有启用的代理槽，请先在「代理槽」添加并保存', 'warn'); return; }
+  if(!slots.length){ toast('没有启用的代理，请先在「IP代理」添加并保存', 'warn'); return; }
   let i = 0;
   for(const a of unbound){
     const slot = slots[i % slots.length];
