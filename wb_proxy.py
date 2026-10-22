@@ -10172,7 +10172,7 @@ def runtime_settings_view():
         "accounts_dir": ACCOUNTS_DIR,
         "usage_dir": USAGE_DIR,
         "settings_file": wb_settings.settings_path(ACCOUNTS_DIR),
-        "version": "1.7.25",
+        "version": "1.7.25.1",
     }
 def current_account():
     """Account used for display purposes (health / usage summaries)."""

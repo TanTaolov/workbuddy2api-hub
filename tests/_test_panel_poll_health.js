@@ -6,7 +6,7 @@
  *     请求，各自在服务端重跑聚合，还把后面的 /accounts、/scheduler 堵在连接
  *     池里。这里钉住：同一 URL 并发只发一份、结果共享、落定后恢复常态、
  *     超过 60 秒的挂死登记项会被换掉且旧请求落定不误删新登记项。
- *  2. #recent 每 5 秒全量重写，数据没变也重写（100 行时一次 50~65ms 的强制
+ *  2. #recentIntl 每 5 秒全量重写，数据没变也重写（100 行时一次 50~65ms 的强制
  *     布局）。这里钉住：内容指纹不变就不写 DOM，行数据或账号昵称一变立刻写。
  *  3. 日志终端每 2 秒全量重写（2000 行时约 700KB/次、layout 250~320ms）。
  *     这里钉住：没有新行一个字节都不动、有新行只 append、过滤变化才整表重画、
@@ -169,7 +169,7 @@ function check(ok, msg){
     }
   }
 
-  /* 5) #recent：同样的数据不再重写，行数据或账号昵称一变立刻重画。 */
+  /* 5) #recentIntl：同样的数据不再重写，行数据或账号昵称一变立刻重画。 */
   {
     const rows = [
       {at: 100, iso: '2026-10-09T01:02:03', model: 'm1', account: 'u1', stream: true,
@@ -193,7 +193,7 @@ function check(ok, msg){
       '/usage/perf': () => Promise.resolve(okJson(perfPayload)),
       '/usage': () => Promise.resolve(okJson(usagePayload)),
     });
-    const el = document.getElementById('recent');   // 桩里按 id 现场建，取到的是同一个
+    const el = document.getElementById('recentIntl');   // 桩里按 id 现场建，取到的是同一个
     let writes = 0;
     let current = '';
     Object.defineProperty(el, 'innerHTML', {
@@ -210,7 +210,7 @@ function check(ok, msg){
     await api.refresh();
     await api.refresh();
     check(writes === 1,
-      '数据没变就不该重写 #recent（省下的正是解析与强制布局），实际重写 ' + writes + ' 次');
+      '数据没变就不该重写 #recentIntl（省下的正是解析与强制布局），实际重写 ' + writes + ' 次');
 
     rows[0].total_tokens = 31;                    // 同一行的数字变了（回填/补数）
     await api.refresh();

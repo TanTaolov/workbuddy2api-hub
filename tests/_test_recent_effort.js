@@ -79,7 +79,7 @@ const api = new Function(script + `
 (async () => {
   window.VIEW_REALM = 'intl';
   await api.refresh();
-  const rendered = dom.byId('recent').innerHTML;
+  const rendered = dom.byId('recentIntl').innerHTML;
   let checks = 0;
   const check = (label, cond, extra) => {
     checks += 1;
